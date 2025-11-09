@@ -3,7 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileUploadController;
-use App\Http\Controllers\AutomationController;
+// use App\Http\Controllers\AutomationController; // Disabled - replaced by Contact Import
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ExternalApiImportController;
 use Illuminate\Support\Facades\Route;
@@ -59,15 +59,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{file}', [FileUploadController::class, 'destroy'])->name('destroy');
     });
 
-    // Automation routes
-    Route::prefix('automation')->name('automation.')->group(function () {
-        Route::get('/', [AutomationController::class, 'index'])->name('index');
-        Route::get('/create', [AutomationController::class, 'create'])->name('create');
-        Route::post('/calculate-stats', [AutomationController::class, 'calculateStats'])->name('calculate-stats');
-        Route::post('/store', [AutomationController::class, 'store'])->name('store');
-        Route::get('/{campaign}', [AutomationController::class, 'show'])->name('show');
-        Route::post('/{campaign}/cancel', [AutomationController::class, 'cancel'])->name('cancel');
-    });
+    // Automation routes - DISABLED (replaced by Contact Import system)
+    // Route::prefix('automation')->name('automation.')->group(function () {
+    //     Route::get('/', [AutomationController::class, 'index'])->name('index');
+    //     Route::get('/create', [AutomationController::class, 'create'])->name('create');
+    //     Route::post('/calculate-stats', [AutomationController::class, 'calculateStats'])->name('calculate-stats');
+    //     Route::post('/store', [AutomationController::class, 'store'])->name('store');
+    //     Route::get('/{campaign}', [AutomationController::class, 'show'])->name('show');
+    //     Route::post('/{campaign}/cancel', [AutomationController::class, 'cancel'])->name('cancel');
+    // });
 });
 
 require __DIR__.'/auth.php';

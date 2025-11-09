@@ -40,11 +40,12 @@ class UploadedFile extends Model
 
     /**
      * Get the message logs for this file.
+     * @deprecated DISABLED - Automation feature has been removed.
      */
-    public function messageLogs(): HasMany
-    {
-        return $this->hasMany(MessageLog::class);
-    }
+    // public function messageLogs(): HasMany
+    // {
+    //     return $this->hasMany(MessageLog::class);
+    // }
 
     /**
      * Get formatted file size.
