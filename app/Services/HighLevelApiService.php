@@ -25,9 +25,19 @@ class HighLevelApiService
         $credentials = $this->getCredentials($apiToken, $locationId);
 
         try {
-            // Correct endpoint: /locations/{locationId}/templates
+            // Try WhatsApp-specific endpoint first (requires proper OAuth scopes)
             $response = Http::withHeaders($this->getHeaders($credentials['token']))
-                ->get("{$this->apiUrl}/locations/{$credentials['locationId']}/templates");
+                ->get("{$this->apiUrl}/locations/{$credentials['locationId']}/templates/whatsapp");
+
+            // If 401 (missing scopes), try generic templates endpoint as fallback
+            if ($response->status() === 401) {
+                Log::warning('HighLevel API: WhatsApp templates endpoint requires additional OAuth scopes. See WHATSAPP_TEMPLATES_SETUP.md', [
+                    'location_id' => $credentials['locationId'],
+                ]);
+
+                $response = Http::withHeaders($this->getHeaders($credentials['token']))
+                    ->get("{$this->apiUrl}/locations/{$credentials['locationId']}/templates");
+            }
 
             if (!$response->successful()) {
                 throw new Exception("Failed to fetch templates: {$response->body()}");
@@ -39,7 +49,7 @@ class HighLevelApiService
             Log::info('HighLevel API: Templates response', [
                 'location_id' => $credentials['locationId'],
                 'response_keys' => array_keys($data),
-                'full_response' => $data,
+                'has_templates' => isset($data['templates']) ? count($data['templates']) : 0,
             ]);
 
             // Return templates array - handle different response structures
