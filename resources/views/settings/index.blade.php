@@ -190,6 +190,183 @@
                     </div>
                 </div>
             </div>
+
+            <!-- External API Integration -->
+            <div class="bg-white shadow-sm sm:rounded-lg">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold mb-4">External API Integration</h3>
+                    <p class="text-sm text-gray-600 mb-6">Connect your custom web API to import client lists directly into the platform.</p>
+
+                    @if($isExternalApiConnected)
+                        <!-- Connected Status -->
+                        <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-6">
+                            <div class="flex items-center">
+                                <svg class="w-6 h-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <div>
+                                    <div class="font-semibold text-green-900">Connected to External API</div>
+                                    <div class="text-sm text-green-700">
+                                        Connected on {{ $externalApiConnectedAt?->format('M d, Y H:i') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Connection Details -->
+                        <div class="mb-6">
+                            <dl class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <dt class="text-sm text-gray-600">API URL</dt>
+                                    <dd class="mt-1 text-sm font-medium break-all">{{ $externalApiUrl }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm text-gray-600">API Token</dt>
+                                    <dd class="mt-1 text-sm font-medium text-gray-900">••••••••••••••••</dd>
+                                </div>
+                            </dl>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex gap-4 flex-wrap">
+                            <a href="{{ route('external-api.index') }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                                Import Clients
+                            </a>
+
+                            <form action="{{ route('settings.test-external-api-connection') }}" method="POST" class="inline">
+                                @csrf
+                                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                    Test Connection
+                                </button>
+                            </form>
+
+                            <button onclick="document.getElementById('updateExternalForm').classList.toggle('hidden')" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                                Update Credentials
+                            </button>
+
+                            <form action="{{ route('settings.disconnect-external-api') }}" method="POST" onsubmit="return confirm('Are you sure you want to disconnect?')" class="inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                                    Disconnect
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Update Form (Hidden by default) -->
+                        <div id="updateExternalForm" class="hidden mt-6 pt-6 border-t">
+                            <form action="{{ route('settings.store-external-api-credentials') }}" method="POST">
+                                @csrf
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="external_api_url" class="block text-sm font-medium text-gray-700 mb-2">
+                                            API URL <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="url" id="external_api_url" name="api_url" required
+                                            value="{{ old('api_url') }}"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            placeholder="https://your-api.com/clients">
+                                    </div>
+
+                                    <div>
+                                        <label for="external_api_token" class="block text-sm font-medium text-gray-700 mb-2">
+                                            API Token <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="password" id="external_api_token" name="api_token" required
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            placeholder="Enter your API token">
+                                    </div>
+
+                                    <div class="flex gap-4">
+                                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                                            Update & Test Connection
+                                        </button>
+                                        <button type="button" onclick="document.getElementById('updateExternalForm').classList.add('hidden')" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    @else
+                        <!-- Not Connected -->
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-6">
+                            <div class="flex items-center">
+                                <svg class="w-6 h-6 text-yellow-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <div>
+                                    <div class="font-semibold text-yellow-900">Not Connected</div>
+                                    <div class="text-sm text-yellow-700">Connect your external API to import client lists</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Connection Form -->
+                        <form action="{{ route('settings.store-external-api-credentials') }}" method="POST" class="space-y-6">
+                            @csrf
+
+                            <div>
+                                <label for="api_url" class="block text-sm font-medium text-gray-700 mb-2">
+                                    API URL <span class="text-red-500">*</span>
+                                </label>
+                                <input type="url" id="api_url" name="api_url" required
+                                    value="{{ old('api_url') }}"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    placeholder="https://your-api.com/clients">
+                                <p class="mt-1 text-xs text-gray-500">The full URL endpoint that returns your client list</p>
+                            </div>
+
+                            <div>
+                                <label for="api_token" class="block text-sm font-medium text-gray-700 mb-2">
+                                    API Token <span class="text-red-500">*</span>
+                                </label>
+                                <input type="password" id="api_token" name="api_token" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    placeholder="Enter your API token">
+                                <p class="mt-1 text-xs text-gray-500">Bearer token for authentication (stored encrypted)</p>
+                            </div>
+
+                            <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">
+                                Connect External API
+                            </button>
+                        </form>
+                    @endif
+
+                    <!-- API Requirements -->
+                    <div class="mt-8 pt-8 border-t">
+                        <h4 class="font-semibold mb-4">API Response Format Requirements:</h4>
+                        <p class="text-sm text-gray-700 mb-3">Your API should return JSON in one of these formats:</p>
+
+                        <div class="bg-gray-50 rounded-md p-4 mb-4">
+                            <p class="text-xs font-semibold mb-2">Option 1: With wrapper key</p>
+                            <pre class="text-xs overflow-x-auto"><code>{
+  "clients": [
+    {"phone": "+971501234567", "name": "John Doe", "email": "john@example.com"},
+    {"phone": "+971509876543", "name": "Jane Smith"}
+  ]
+}</code></pre>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-md p-4">
+                            <p class="text-xs font-semibold mb-2">Option 2: Direct array</p>
+                            <pre class="text-xs overflow-x-auto"><code>[
+  {"phone": "+971501234567", "name": "John Doe"},
+  {"phone": "+971509876543", "name": "Jane Smith"}
+]</code></pre>
+                        </div>
+
+                        <div class="mt-4 p-4 bg-blue-50 rounded-md">
+                            <p class="text-sm text-blue-900">
+                                <strong>Supported field names:</strong> phone/mobile/telephone, name/full_name, email/email_address
+                            </p>
+                            <p class="text-sm text-blue-900 mt-2">
+                                <strong>Note:</strong> Phone number is required. Contacts without valid phone numbers will be skipped.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </x-app-layout>

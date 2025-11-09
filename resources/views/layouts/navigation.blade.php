@@ -8,6 +8,9 @@
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                     <a href="{{ route('dashboard') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('dashboard') ? 'border-blue-600 text-gray-900' : 'border-transparent text-gray-500' }} text-sm font-medium">Dashboard</a>
                     <a href="{{ route('files.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('files.*') ? 'border-blue-600 text-gray-900' : 'border-transparent text-gray-500' }} text-sm font-medium">Files</a>
+                    @if(auth()->user()->external_api_connected)
+                        <a href="{{ route('external-api.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('external-api.*') ? 'border-blue-600 text-gray-900' : 'border-transparent text-gray-500' }} text-sm font-medium">API Import</a>
+                    @endif
                     <a href="{{ route('automation.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('automation.*') ? 'border-blue-600 text-gray-900' : 'border-transparent text-gray-500' }} text-sm font-medium">Campaigns</a>
                     <a href="{{ route('settings.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('settings.*') ? 'border-blue-600 text-gray-900' : 'border-transparent text-gray-500' }} text-sm font-medium">Settings</a>
                 </div>
