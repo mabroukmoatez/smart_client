@@ -227,6 +227,75 @@ class FileProcessingService
     }
 
     /**
+     * Merge multiple files into one.
+     *
+     * @param \Illuminate\Support\Collection $files Collection of UploadedFile models
+     * @param string $mergedFilename
+     * @return array [csv_path, row_count, file_size, column_mapping]
+     * @throws Exception
+     */
+    public function mergeFiles($files, string $mergedFilename): array
+    {
+        if ($files->isEmpty()) {
+            throw new Exception('No files to merge.');
+        }
+
+        // Validate all files have compatible column mappings
+        $firstMapping = $files->first()->column_mapping;
+        $phoneColumn = $firstMapping['phone_column'] ?? null;
+        $nameColumn = $firstMapping['name_column'] ?? null;
+
+        if (!$phoneColumn) {
+            throw new Exception('Files must have phone column mapping.');
+        }
+
+        // Prepare merged data
+        $mergedData = [];
+        $headers = ['phone', 'name'];
+
+        foreach ($files as $file) {
+            $fileData = $this->readCsvWithMapping(
+                $file->converted_csv_path,
+                $file->column_mapping
+            );
+
+            $mergedData = array_merge($mergedData, $fileData);
+        }
+
+        if (empty($mergedData)) {
+            throw new Exception('No data found in the selected files.');
+        }
+
+        // Remove duplicates based on phone number
+        $uniqueData = collect($mergedData)->unique('phone')->values()->all();
+
+        // Create merged CSV
+        $userId = auth()->id();
+        $csvFileName = 'merged_' . time() . '.csv';
+        $csvPath = "uploads/{$userId}/converted/{$csvFileName}";
+
+        // Build CSV content
+        $csvContent = $this->arrayToCsv(array_merge(
+            [$headers],
+            array_map(function ($row) {
+                return [$row['phone'], $row['name'] ?? ''];
+            }, $uniqueData)
+        ));
+
+        Storage::put($csvPath, $csvContent);
+
+        return [
+            'csv_path' => $csvPath,
+            'row_count' => count($uniqueData),
+            'file_size' => strlen($csvContent),
+            'column_mapping' => [
+                'phone_column' => 'phone',
+                'name_column' => 'name',
+            ],
+        ];
+    }
+
+    /**
      * Delete file and its converted version.
      *
      * @param string $originalPath

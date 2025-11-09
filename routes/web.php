@@ -36,6 +36,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/upload', [FileUploadController::class, 'upload'])->name('upload');
         Route::get('/map-columns', [FileUploadController::class, 'mapColumns'])->name('map-columns');
         Route::post('/store', [FileUploadController::class, 'store'])->name('store');
+        Route::post('/merge', [FileUploadController::class, 'merge'])->name('merge');
+        Route::post('/bulk-delete', [FileUploadController::class, 'bulkDelete'])->name('bulk-delete');
         Route::get('/{file}/download', [FileUploadController::class, 'download'])->name('download');
         Route::get('/{file}/preview', [FileUploadController::class, 'preview'])->name('preview');
         Route::delete('/{file}', [FileUploadController::class, 'destroy'])->name('destroy');

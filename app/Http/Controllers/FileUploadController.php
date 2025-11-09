@@ -229,4 +229,86 @@ class FileUploadController extends Controller
             return back()->withErrors(['error' => $e->getMessage()]);
         }
     }
+
+    /**
+     * Merge multiple files into one.
+     */
+    public function merge(Request $request)
+    {
+        $request->validate([
+            'file_ids' => 'required|array|min:2',
+            'file_ids.*' => 'exists:uploaded_files,id',
+            'merged_filename' => 'required|string|max:255',
+        ]);
+
+        try {
+            // Get files belonging to user
+            $files = UploadedFile::whereIn('id', $request->file_ids)
+                ->where('user_id', auth()->id())
+                ->get();
+
+            if ($files->count() !== count($request->file_ids)) {
+                throw new Exception('Some files are not accessible.');
+            }
+
+            // Merge files
+            $result = $this->fileProcessor->mergeFiles($files, $request->merged_filename);
+
+            // Create new uploaded file record
+            UploadedFile::create([
+                'user_id' => auth()->id(),
+                'original_filename' => $request->merged_filename . '.csv',
+                'original_file_path' => $result['csv_path'],
+                'original_mime_type' => 'text/csv',
+                'original_file_size' => $result['file_size'],
+                'converted_csv_path' => $result['csv_path'],
+                'row_count' => $result['row_count'],
+                'column_mapping' => $result['column_mapping'],
+                'notes' => 'Merged from ' . $files->count() . ' files: ' . $files->pluck('original_filename')->implode(', '),
+            ]);
+
+            return redirect()->route('files.index')
+                ->with('success', "Successfully merged {$files->count()} files into {$request->merged_filename}!");
+        } catch (Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Bulk delete files.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'file_ids' => 'required|array|min:1',
+            'file_ids.*' => 'exists:uploaded_files,id',
+        ]);
+
+        try {
+            // Get files belonging to user
+            $files = UploadedFile::whereIn('id', $request->file_ids)
+                ->where('user_id', auth()->id())
+                ->get();
+
+            if ($files->isEmpty()) {
+                throw new Exception('No accessible files found.');
+            }
+
+            $count = $files->count();
+
+            // Delete each file
+            foreach ($files as $file) {
+                $this->fileProcessor->deleteFiles(
+                    $file->original_file_path,
+                    $file->converted_csv_path
+                );
+                $file->delete();
+            }
+
+            return redirect()->route('files.index')
+                ->with('success', "Successfully deleted {$count} file(s)!");
+        } catch (Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
 }
