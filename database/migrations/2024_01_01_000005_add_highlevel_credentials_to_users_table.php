@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('highlevel_api_token')->nullable()->after('password');
+            $table->text('highlevel_api_token')->nullable()->after('password');
             $table->string('highlevel_location_id')->nullable()->after('highlevel_api_token');
             $table->boolean('highlevel_connected')->default(false)->after('highlevel_location_id');
             $table->timestamp('highlevel_connected_at')->nullable()->after('highlevel_connected');
