@@ -5,6 +5,15 @@
         </h2>
     </x-slot>
 
+    @if($importJob->status === 'processing' || $importJob->status === 'pending')
+        <script>
+            // Auto-refresh every 3 seconds if import is still processing
+            setTimeout(function() {
+                window.location.reload();
+            }, 3000);
+        </script>
+    @endif
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             @if(session('success'))
@@ -173,6 +182,7 @@
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">HighLevel ID</th>
@@ -182,13 +192,29 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
-                                    @foreach($importJob->contactLogs->take(100) as $log)
-                                        <tr class="hover:bg-gray-50 {{ $log->status === 'failed' ? 'bg-red-50' : '' }}">
+                                    @foreach($importJob->contactLogs->sortByDesc('created_at')->take(100) as $log)
+                                        @php
+                                            $action = $log->contact_data['action'] ?? 'unknown';
+                                        @endphp
+                                        <tr class="hover:bg-gray-50 {{ $log->status === 'failed' ? 'bg-red-50' : ($action === 'created' ? 'bg-blue-50' : 'bg-yellow-50') }}">
                                             <td class="px-4 py-3">
                                                 @if($log->status === 'sent')
                                                     <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Success</span>
                                                 @else
                                                     <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Failed</span>
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                @if($log->status === 'sent')
+                                                    @if($action === 'created')
+                                                        <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">CREATED</span>
+                                                    @elseif($action === 'updated')
+                                                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">UPDATED</span>
+                                                    @else
+                                                        <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">-</span>
+                                                    @endif
+                                                @else
+                                                    <span class="text-gray-400 text-xs">-</span>
                                                 @endif
                                             </td>
                                             <td class="px-4 py-3 text-sm text-gray-900">{{ $log->contact_phone }}</td>
