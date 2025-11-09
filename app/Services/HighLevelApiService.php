@@ -382,6 +382,167 @@ class HighLevelApiService
     }
 
     /**
+     * Ensure tags exist in HighLevel (create if they don't exist).
+     *
+     * @param array $tagNames Array of tag names
+     * @param string|null $apiToken
+     * @param string|null $locationId
+     * @return array Array of existing tag names
+     */
+    public function ensureTagsExist(array $tagNames, ?string $apiToken = null, ?string $locationId = null): array
+    {
+        if (empty($tagNames)) {
+            return [];
+        }
+
+        $credentials = $this->getCredentials($apiToken, $locationId);
+
+        try {
+            // Get existing tags
+            $existingTags = $this->getTags($credentials['token'], $credentials['locationId']);
+            $existingTagNames = array_map(function($tag) {
+                return is_array($tag) ? ($tag['name'] ?? '') : $tag;
+            }, $existingTags);
+
+            // Create tags that don't exist
+            foreach ($tagNames as $tagName) {
+                if (!in_array($tagName, $existingTagNames)) {
+                    try {
+                        $this->createTag($tagName, $credentials['token'], $credentials['locationId']);
+                        $existingTagNames[] = $tagName;
+                        Log::info('HighLevel API: New tag created', ['tag' => $tagName]);
+                    } catch (Exception $e) {
+                        // Tag might already exist or creation failed, continue
+                        Log::warning('HighLevel API: Could not create tag', [
+                            'tag' => $tagName,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            }
+
+            return $tagNames;
+        } catch (Exception $e) {
+            Log::error('HighLevel API: Failed to ensure tags exist', [
+                'tags' => $tagNames,
+                'error' => $e->getMessage(),
+            ]);
+            // Return the tags anyway, let the contact creation handle it
+            return $tagNames;
+        }
+    }
+
+    /**
+     * Create or update a contact with tags.
+     *
+     * @param array $contactData
+     * @param array $tags
+     * @param string|null $apiToken
+     * @param string|null $locationId
+     * @return array
+     * @throws Exception
+     */
+    public function upsertContact(
+        array $contactData,
+        array $tags = [],
+        ?string $apiToken = null,
+        ?string $locationId = null
+    ): array {
+        $credentials = $this->getCredentials($apiToken, $locationId);
+
+        try {
+            if (empty($contactData['phone'])) {
+                throw new Exception('Phone number is required');
+            }
+
+            // Ensure tags exist first
+            if (!empty($tags)) {
+                $tags = $this->ensureTagsExist($tags, $credentials['token'], $credentials['locationId']);
+            }
+
+            // Search for existing contact by phone
+            $existingContact = null;
+            try {
+                $searchResponse = Http::withHeaders($this->getHeaders($credentials['token']))
+                    ->get("{$this->apiUrl}/contacts/search", [
+                        'locationId' => $credentials['locationId'],
+                        'query' => $contactData['phone'],
+                    ]);
+
+                if ($searchResponse->successful()) {
+                    $searchData = $searchResponse->json();
+                    $contacts = $searchData['contacts'] ?? [];
+                    if (!empty($contacts)) {
+                        $existingContact = $contacts[0];
+                    }
+                }
+            } catch (Exception $e) {
+                Log::warning('HighLevel API: Contact search failed, will attempt create', [
+                    'phone' => $contactData['phone'],
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            // Prepare contact payload
+            $payload = array_merge([
+                'locationId' => $credentials['locationId'],
+            ], $contactData);
+
+            // Add tags to payload
+            if (!empty($tags)) {
+                $payload['tags'] = $tags;
+            }
+
+            if ($existingContact) {
+                // UPDATE existing contact
+                $contactId = $existingContact['id'];
+                $response = Http::withHeaders($this->getHeaders($credentials['token']))
+                    ->put("{$this->apiUrl}/contacts/{$contactId}", $payload);
+
+                if (!$response->successful()) {
+                    throw new Exception("Failed to update contact: {$response->body()}");
+                }
+
+                $result = $response->json();
+                $contact = $result['contact'] ?? $result;
+
+                Log::info('HighLevel API: Contact updated', [
+                    'contact_id' => $contactId,
+                    'phone' => $contactData['phone'],
+                    'tags' => $tags,
+                ]);
+
+                return $contact;
+            } else {
+                // CREATE new contact
+                $response = Http::withHeaders($this->getHeaders($credentials['token']))
+                    ->post("{$this->apiUrl}/contacts", $payload);
+
+                if (!$response->successful()) {
+                    throw new Exception("Failed to create contact: {$response->body()}");
+                }
+
+                $result = $response->json();
+                $contact = $result['contact'] ?? $result;
+
+                Log::info('HighLevel API: Contact created', [
+                    'contact_id' => $contact['id'] ?? null,
+                    'phone' => $contactData['phone'],
+                    'tags' => $tags,
+                ]);
+
+                return $contact;
+            }
+        } catch (Exception $e) {
+            Log::error('HighLevel API: Failed to upsert contact', [
+                'phone' => $contactData['phone'] ?? null,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
      * Create a new tag.
      *
      * @param string $tagName
@@ -413,61 +574,6 @@ class HighLevelApiService
         } catch (Exception $e) {
             Log::error('HighLevel API: Failed to create tag', [
                 'tag_name' => $tagName,
-                'error' => $e->getMessage(),
-            ]);
-            throw $e;
-        }
-    }
-
-    /**
-     * Create or update a contact with tags.
-     *
-     * @param array $contactData
-     * @param array $tags
-     * @param string|null $apiToken
-     * @param string|null $locationId
-     * @return array
-     * @throws Exception
-     */
-    public function upsertContact(
-        array $contactData,
-        array $tags = [],
-        ?string $apiToken = null,
-        ?string $locationId = null
-    ): array {
-        $credentials = $this->getCredentials($apiToken, $locationId);
-
-        try {
-            // Prepare contact data
-            $payload = array_merge([
-                'locationId' => $credentials['locationId'],
-            ], $contactData);
-
-            // Add tags if provided
-            if (!empty($tags)) {
-                $payload['tags'] = $tags;
-            }
-
-            // Use upsert endpoint to create or update
-            $response = Http::withHeaders($this->getHeaders($credentials['token']))
-                ->post("{$this->apiUrl}/contacts/upsert", $payload);
-
-            if (!$response->successful()) {
-                throw new Exception("Failed to upsert contact: {$response->body()}");
-            }
-
-            $result = $response->json();
-
-            Log::info('HighLevel API: Contact upserted', [
-                'phone' => $contactData['phone'] ?? null,
-                'email' => $contactData['email'] ?? null,
-                'tags' => $tags,
-            ]);
-
-            return $result['contact'] ?? $result;
-        } catch (Exception $e) {
-            Log::error('HighLevel API: Failed to upsert contact', [
-                'contact_data' => $contactData,
                 'error' => $e->getMessage(),
             ]);
             throw $e;
