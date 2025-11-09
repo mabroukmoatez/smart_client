@@ -34,6 +34,10 @@ Route::get('/debug/templates', function () {
         "GET /locations/{$locationId}/templates/whatsapp",
         "GET /conversations/templates?locationId={$locationId}",
         "GET /templates?locationId={$locationId}",
+        "GET /conversations/whatsapp/templates?locationId={$locationId}",
+        "GET /whatsapp/templates?locationId={$locationId}",
+        "GET /locations/{$locationId}/whatsapp/templates",
+        "GET /conversations/{$locationId}/templates",
     ];
 
     foreach ($endpoints as $endpoint) {

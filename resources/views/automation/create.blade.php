@@ -73,17 +73,36 @@
                             <label for="template_id" class="block text-sm font-medium text-gray-700 mb-2">
                                 WhatsApp Template <span class="text-red-500">*</span>
                             </label>
-                            <select id="template_id" name="template_id" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="">Select template...</option>
-                                @foreach($templates as $template)
-                                    <option value="{{ $template['id'] }}" data-name="{{ $template['name'] }}">
-                                        {{ $template['name'] }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <input type="hidden" id="template_name" name="template_name">
+                            @if(count($templates) > 0)
+                                <select id="template_id" name="template_id" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">Select template...</option>
+                                    @foreach($templates as $template)
+                                        <option value="{{ $template['id'] }}" data-name="{{ $template['name'] }}">
+                                            {{ $template['name'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <input type="hidden" id="template_name" name="template_name">
+                            @else
+                                <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-3">
+                                    <p class="text-sm text-blue-800 mb-2">
+                                        <strong>Note:</strong> Templates could not be loaded from the API. Enter your template name manually.
+                                    </p>
+                                    <p class="text-xs text-blue-700">
+                                        You can find your template names in HighLevel at: <br>
+                                        <code class="bg-blue-100 px-1 rounded">Settings → WhatsApp → Templates</code>
+                                    </p>
+                                </div>
+                                <input type="text" id="template_name" name="template_name" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    placeholder="Enter template name (e.g., hello, after_calling, gulfa_offer)">
+                                <p class="mt-1 text-xs text-gray-500">Enter the exact template name as shown in your HighLevel WhatsApp settings</p>
+                            @endif
                             @error('template_id')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                            @error('template_name')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
