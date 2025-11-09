@@ -460,11 +460,12 @@ class HighLevelApiService
                 $tags = $this->ensureTagsExist($tags, $credentials['token'], $credentials['locationId']);
             }
 
-            // Search for existing contact by phone
+            // Search for existing contact by phone - try multiple search strategies
             $existingContact = null;
             try {
+                // Strategy 1: Search by phone number
                 $searchResponse = Http::withHeaders($this->getHeaders($credentials['token']))
-                    ->get("{$this->apiUrl}/contacts/search", [
+                    ->get("{$this->apiUrl}/contacts/", [
                         'locationId' => $credentials['locationId'],
                         'query' => $contactData['phone'],
                     ]);
@@ -472,8 +473,22 @@ class HighLevelApiService
                 if ($searchResponse->successful()) {
                     $searchData = $searchResponse->json();
                     $contacts = $searchData['contacts'] ?? [];
-                    if (!empty($contacts)) {
-                        $existingContact = $contacts[0];
+
+                    // Find exact phone match
+                    foreach ($contacts as $contact) {
+                        $contactPhone = $contact['phone'] ?? '';
+                        // Remove all non-numeric characters for comparison
+                        $normalizedContactPhone = preg_replace('/[^0-9+]/', '', $contactPhone);
+                        $normalizedSearchPhone = preg_replace('/[^0-9+]/', '', $contactData['phone']);
+
+                        if ($normalizedContactPhone === $normalizedSearchPhone) {
+                            $existingContact = $contact;
+                            Log::info('HighLevel API: Found existing contact', [
+                                'phone' => $contactData['phone'],
+                                'contact_id' => $contact['id'] ?? null,
+                            ]);
+                            break;
+                        }
                     }
                 }
             } catch (Exception $e) {
@@ -496,6 +511,12 @@ class HighLevelApiService
             if ($existingContact) {
                 // UPDATE existing contact
                 $contactId = $existingContact['id'];
+
+                Log::info('HighLevel API: Updating existing contact', [
+                    'contact_id' => $contactId,
+                    'phone' => $contactData['phone'],
+                ]);
+
                 $response = Http::withHeaders($this->getHeaders($credentials['token']))
                     ->put("{$this->apiUrl}/contacts/{$contactId}", $payload);
 
@@ -505,8 +526,9 @@ class HighLevelApiService
 
                 $result = $response->json();
                 $contact = $result['contact'] ?? $result;
+                $contact['_action'] = 'updated'; // Add flag to know it was updated
 
-                Log::info('HighLevel API: Contact updated', [
+                Log::info('HighLevel API: Contact updated successfully', [
                     'contact_id' => $contactId,
                     'phone' => $contactData['phone'],
                     'tags' => $tags,
@@ -515,6 +537,10 @@ class HighLevelApiService
                 return $contact;
             } else {
                 // CREATE new contact
+                Log::info('HighLevel API: Creating new contact', [
+                    'phone' => $contactData['phone'],
+                ]);
+
                 $response = Http::withHeaders($this->getHeaders($credentials['token']))
                     ->post("{$this->apiUrl}/contacts", $payload);
 
@@ -524,8 +550,9 @@ class HighLevelApiService
 
                 $result = $response->json();
                 $contact = $result['contact'] ?? $result;
+                $contact['_action'] = 'created'; // Add flag to know it was created
 
-                Log::info('HighLevel API: Contact created', [
+                Log::info('HighLevel API: Contact created successfully', [
                     'contact_id' => $contact['id'] ?? null,
                     'phone' => $contactData['phone'],
                     'tags' => $tags,

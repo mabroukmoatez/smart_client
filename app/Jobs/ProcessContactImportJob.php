@@ -157,6 +157,9 @@ class ProcessContactImportJob implements ShouldQueue
             // Create/update contact in HighLevel
             $result = $highLevelApi->upsertContact($contactData, $tags);
 
+            // Determine if created or updated
+            $action = $result['_action'] ?? 'unknown';
+
             // Log success
             ContactImportLog::create([
                 'import_job_id' => $this->importJob->id,
@@ -164,7 +167,7 @@ class ProcessContactImportJob implements ShouldQueue
                 'contact_phone' => $phone,
                 'contact_name' => $name,
                 'highlevel_contact_id' => $result['id'] ?? null,
-                'contact_data' => $contactData,
+                'contact_data' => array_merge($contactData, ['action' => $action]),
                 'assigned_tags' => $tags,
                 'api_response' => $result,
                 'status' => 'sent', // Using 'sent' for backward compatibility
@@ -173,6 +176,13 @@ class ProcessContactImportJob implements ShouldQueue
 
             $this->importJob->increment('total_imported');
             $this->importJob->decrement('total_pending');
+
+            Log::info('Contact Import: Contact processed', [
+                'job_id' => $this->importJob->id,
+                'phone' => $phone,
+                'action' => $action,
+                'contact_id' => $result['id'] ?? null,
+            ]);
 
         } catch (Exception $e) {
             // Log failure
