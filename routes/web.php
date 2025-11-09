@@ -71,8 +71,3 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
-
-// Debug routes (remove in production)
-if (app()->environment('local')) {
-    require __DIR__.'/debug.php';
-}
