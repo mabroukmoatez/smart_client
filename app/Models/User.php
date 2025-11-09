@@ -24,6 +24,10 @@ class User extends Authenticatable
         'highlevel_location_id',
         'highlevel_connected',
         'highlevel_connected_at',
+        'external_api_url',
+        'external_api_token',
+        'external_api_connected',
+        'external_api_connected_at',
     ];
 
     /**
@@ -48,6 +52,8 @@ class User extends Authenticatable
             'password' => 'hashed',
             'highlevel_connected' => 'boolean',
             'highlevel_connected_at' => 'datetime',
+            'external_api_connected' => 'boolean',
+            'external_api_connected_at' => 'datetime',
         ];
     }
 
