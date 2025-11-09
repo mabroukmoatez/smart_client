@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\AutomationController;
+use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -18,6 +19,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Settings routes
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [SettingsController::class, 'index'])->name('index');
+        Route::post('/credentials', [SettingsController::class, 'storeCredentials'])->name('store-credentials');
+        Route::post('/test-connection', [SettingsController::class, 'testConnection'])->name('test-connection');
+        Route::delete('/disconnect', [SettingsController::class, 'disconnect'])->name('disconnect');
+        Route::get('/account-info', [SettingsController::class, 'getAccountInfo'])->name('account-info');
+    });
 
     // File Upload routes
     Route::prefix('files')->name('files.')->group(function () {

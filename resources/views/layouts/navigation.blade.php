@@ -9,6 +9,7 @@
                     <a href="{{ route('dashboard') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('dashboard') ? 'border-blue-600 text-gray-900' : 'border-transparent text-gray-500' }} text-sm font-medium">Dashboard</a>
                     <a href="{{ route('files.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('files.*') ? 'border-blue-600 text-gray-900' : 'border-transparent text-gray-500' }} text-sm font-medium">Files</a>
                     <a href="{{ route('automation.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('automation.*') ? 'border-blue-600 text-gray-900' : 'border-transparent text-gray-500' }} text-sm font-medium">Campaigns</a>
+                    <a href="{{ route('settings.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('settings.*') ? 'border-blue-600 text-gray-900' : 'border-transparent text-gray-500' }} text-sm font-medium">Settings</a>
                 </div>
             </div>
             <div class="hidden sm:flex sm:items-center sm:ml-6">
