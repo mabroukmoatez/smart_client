@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\AutomationController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\ExternalApiImportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -23,10 +24,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Settings routes
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [SettingsController::class, 'index'])->name('index');
+
+        // HighLevel settings
         Route::post('/credentials', [SettingsController::class, 'storeCredentials'])->name('store-credentials');
         Route::post('/test-connection', [SettingsController::class, 'testConnection'])->name('test-connection');
         Route::delete('/disconnect', [SettingsController::class, 'disconnect'])->name('disconnect');
         Route::get('/account-info', [SettingsController::class, 'getAccountInfo'])->name('account-info');
+
+        // External API settings
+        Route::post('/external-api/credentials', [SettingsController::class, 'storeExternalApiCredentials'])->name('store-external-api-credentials');
+        Route::post('/external-api/test-connection', [SettingsController::class, 'testExternalApiConnection'])->name('test-external-api-connection');
+        Route::delete('/external-api/disconnect', [SettingsController::class, 'disconnectExternalApi'])->name('disconnect-external-api');
+    });
+
+    // External API Import routes
+    Route::prefix('external-api')->name('external-api.')->group(function () {
+        Route::get('/import', [ExternalApiImportController::class, 'index'])->name('index');
+        Route::post('/preview', [ExternalApiImportController::class, 'preview'])->name('preview');
+        Route::get('/confirm', [ExternalApiImportController::class, 'confirm'])->name('confirm');
+        Route::post('/import', [ExternalApiImportController::class, 'import'])->name('import');
     });
 
     // File Upload routes
@@ -36,6 +52,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/upload', [FileUploadController::class, 'upload'])->name('upload');
         Route::get('/map-columns', [FileUploadController::class, 'mapColumns'])->name('map-columns');
         Route::post('/store', [FileUploadController::class, 'store'])->name('store');
+        Route::post('/merge', [FileUploadController::class, 'merge'])->name('merge');
+        Route::post('/bulk-delete', [FileUploadController::class, 'bulkDelete'])->name('bulk-delete');
         Route::get('/{file}/download', [FileUploadController::class, 'download'])->name('download');
         Route::get('/{file}/preview', [FileUploadController::class, 'preview'])->name('preview');
         Route::delete('/{file}', [FileUploadController::class, 'destroy'])->name('destroy');

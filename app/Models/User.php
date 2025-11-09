@@ -24,6 +24,10 @@ class User extends Authenticatable
         'highlevel_location_id',
         'highlevel_connected',
         'highlevel_connected_at',
+        'external_api_url',
+        'external_api_token',
+        'external_api_connected',
+        'external_api_connected_at',
     ];
 
     /**
@@ -48,6 +52,8 @@ class User extends Authenticatable
             'password' => 'hashed',
             'highlevel_connected' => 'boolean',
             'highlevel_connected_at' => 'datetime',
+            'external_api_connected' => 'boolean',
+            'external_api_connected_at' => 'datetime',
         ];
     }
 
@@ -61,9 +67,18 @@ class User extends Authenticatable
 
     /**
      * Get the automation campaigns for the user.
+     * @deprecated Use contactImportJobs() instead
      */
     public function automationCampaigns(): HasMany
     {
         return $this->hasMany(AutomationCampaign::class);
+    }
+
+    /**
+     * Get the contact import jobs for the user.
+     */
+    public function contactImportJobs(): HasMany
+    {
+        return $this->hasMany(ContactImportJob::class);
     }
 }

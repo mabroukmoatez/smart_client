@@ -343,4 +343,173 @@ class HighLevelApiService
 
         throw new Exception('HighLevel API credentials not configured. Please add your credentials in Settings.');
     }
+
+    /**
+     * Get all tags for a location.
+     *
+     * @param string|null $apiToken
+     * @param string|null $locationId
+     * @return array
+     * @throws Exception
+     */
+    public function getTags(?string $apiToken = null, ?string $locationId = null): array
+    {
+        $credentials = $this->getCredentials($apiToken, $locationId);
+
+        try {
+            $response = Http::withHeaders($this->getHeaders($credentials['token']))
+                ->get("{$this->apiUrl}/locations/{$credentials['locationId']}/tags");
+
+            if (!$response->successful()) {
+                throw new Exception("Failed to fetch tags: {$response->body()}");
+            }
+
+            $data = $response->json();
+
+            Log::info('HighLevel API: Tags fetched', [
+                'location_id' => $credentials['locationId'],
+                'tag_count' => isset($data['tags']) ? count($data['tags']) : 0,
+            ]);
+
+            return $data['tags'] ?? $data ?? [];
+        } catch (Exception $e) {
+            Log::error('HighLevel API: Failed to get tags', [
+                'error' => $e->getMessage(),
+                'location_id' => $credentials['locationId'] ?? null,
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Create a new tag.
+     *
+     * @param string $tagName
+     * @param string|null $apiToken
+     * @param string|null $locationId
+     * @return array
+     * @throws Exception
+     */
+    public function createTag(string $tagName, ?string $apiToken = null, ?string $locationId = null): array
+    {
+        $credentials = $this->getCredentials($apiToken, $locationId);
+
+        try {
+            $response = Http::withHeaders($this->getHeaders($credentials['token']))
+                ->post("{$this->apiUrl}/locations/{$credentials['locationId']}/tags", [
+                    'name' => $tagName,
+                ]);
+
+            if (!$response->successful()) {
+                throw new Exception("Failed to create tag: {$response->body()}");
+            }
+
+            Log::info('HighLevel API: Tag created', [
+                'tag_name' => $tagName,
+                'location_id' => $credentials['locationId'],
+            ]);
+
+            return $response->json();
+        } catch (Exception $e) {
+            Log::error('HighLevel API: Failed to create tag', [
+                'tag_name' => $tagName,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Create or update a contact with tags.
+     *
+     * @param array $contactData
+     * @param array $tags
+     * @param string|null $apiToken
+     * @param string|null $locationId
+     * @return array
+     * @throws Exception
+     */
+    public function upsertContact(
+        array $contactData,
+        array $tags = [],
+        ?string $apiToken = null,
+        ?string $locationId = null
+    ): array {
+        $credentials = $this->getCredentials($apiToken, $locationId);
+
+        try {
+            // Prepare contact data
+            $payload = array_merge([
+                'locationId' => $credentials['locationId'],
+            ], $contactData);
+
+            // Add tags if provided
+            if (!empty($tags)) {
+                $payload['tags'] = $tags;
+            }
+
+            // Use upsert endpoint to create or update
+            $response = Http::withHeaders($this->getHeaders($credentials['token']))
+                ->post("{$this->apiUrl}/contacts/upsert", $payload);
+
+            if (!$response->successful()) {
+                throw new Exception("Failed to upsert contact: {$response->body()}");
+            }
+
+            $result = $response->json();
+
+            Log::info('HighLevel API: Contact upserted', [
+                'phone' => $contactData['phone'] ?? null,
+                'email' => $contactData['email'] ?? null,
+                'tags' => $tags,
+            ]);
+
+            return $result['contact'] ?? $result;
+        } catch (Exception $e) {
+            Log::error('HighLevel API: Failed to upsert contact', [
+                'contact_data' => $contactData,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Add tags to an existing contact.
+     *
+     * @param string $contactId
+     * @param array $tags
+     * @param string|null $apiToken
+     * @return array
+     * @throws Exception
+     */
+    public function addTagsToContact(string $contactId, array $tags, ?string $apiToken = null): array
+    {
+        $credentials = $this->getCredentials($apiToken, null);
+
+        try {
+            $response = Http::withHeaders($this->getHeaders($credentials['token']))
+                ->post("{$this->apiUrl}/contacts/{$contactId}/tags", [
+                    'tags' => $tags,
+                ]);
+
+            if (!$response->successful()) {
+                throw new Exception("Failed to add tags to contact: {$response->body()}");
+            }
+
+            Log::info('HighLevel API: Tags added to contact', [
+                'contact_id' => $contactId,
+                'tags' => $tags,
+            ]);
+
+            return $response->json();
+        } catch (Exception $e) {
+            Log::error('HighLevel API: Failed to add tags to contact', [
+                'contact_id' => $contactId,
+                'tags' => $tags,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
 }
