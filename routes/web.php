@@ -6,6 +6,7 @@ use App\Http\Controllers\FileUploadController;
 // use App\Http\Controllers\AutomationController; // Disabled - replaced by Contact Import
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ExternalApiImportController;
+use App\Http\Controllers\ContactImportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -71,6 +72,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{file}/download', [FileUploadController::class, 'download'])->name('download');
         Route::get('/{file}/preview', [FileUploadController::class, 'preview'])->name('preview');
         Route::delete('/{file}', [FileUploadController::class, 'destroy'])->name('destroy');
+    });
+
+    // Contact Import routes
+    Route::prefix('contact-import')->name('contact-import.')->group(function () {
+        Route::get('/', [ContactImportController::class, 'index'])->name('index');
+        Route::post('/', [ContactImportController::class, 'store'])->name('store');
+        Route::get('/list', [ContactImportController::class, 'list'])->name('list');
+        Route::get('/{importJob}', [ContactImportController::class, 'show'])->name('show');
+        Route::post('/{importJob}/cancel', [ContactImportController::class, 'cancel'])->name('cancel');
     });
 
     // Automation routes - DISABLED (replaced by Contact Import system)
