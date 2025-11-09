@@ -20,6 +20,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'highlevel_api_token',
+        'highlevel_location_id',
+        'highlevel_connected',
+        'highlevel_connected_at',
     ];
 
     /**
@@ -42,6 +46,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'highlevel_connected' => 'boolean',
+            'highlevel_connected_at' => 'datetime',
         ];
     }
 
