@@ -31,6 +31,83 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     });
 
+    // TEMPORARY: Debug route to test adding contact with tag
+    Route::get('/debug-add-contact', function () {
+        $user = auth()->user();
+        $highLevelApi = app(\App\Services\HighLevelApiService::class);
+
+        $results = [
+            'step_1_check_connection' => null,
+            'step_2_create_tag' => null,
+            'step_3_create_contact' => null,
+            'errors' => [],
+        ];
+
+        try {
+            // Step 1: Check if connected
+            if (!$user->highlevel_connected) {
+                throw new Exception('HighLevel not connected. Please connect in Settings first.');
+            }
+            $results['step_1_check_connection'] = 'Connected';
+
+            // Step 2: Create a test tag
+            $testTag = 'Test-Tag-' . date('His');
+            try {
+                $tagResult = $highLevelApi->createTag($testTag);
+                $results['step_2_create_tag'] = [
+                    'success' => true,
+                    'tag_name' => $testTag,
+                    'response' => $tagResult,
+                ];
+            } catch (Exception $e) {
+                $results['step_2_create_tag'] = [
+                    'success' => false,
+                    'tag_name' => $testTag,
+                    'error' => $e->getMessage(),
+                ];
+            }
+
+            // Step 3: Create a test contact with tag
+            $testPhone = '+971500000' . rand(100, 999);
+            $testName = 'Test Contact ' . date('His');
+
+            try {
+                $contactData = [
+                    'phone' => $testPhone,
+                    'name' => $testName,
+                    'email' => 'test' . rand(1000, 9999) . '@example.com',
+                ];
+
+                $contactResult = $highLevelApi->upsertContact($contactData, [$testTag]);
+
+                $results['step_3_create_contact'] = [
+                    'success' => true,
+                    'phone' => $testPhone,
+                    'name' => $testName,
+                    'tags' => [$testTag],
+                    'contact_id' => $contactResult['id'] ?? null,
+                    'full_response' => $contactResult,
+                ];
+            } catch (Exception $e) {
+                $results['step_3_create_contact'] = [
+                    'success' => false,
+                    'phone' => $testPhone,
+                    'name' => $testName,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ];
+            }
+
+            $results['overall_status'] = 'TEST COMPLETED';
+
+        } catch (Exception $e) {
+            $results['errors'][] = $e->getMessage();
+            $results['overall_status'] = 'TEST FAILED';
+        }
+
+        return response()->json($results, 200, [], JSON_PRETTY_PRINT);
+    });
+
     // Profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
