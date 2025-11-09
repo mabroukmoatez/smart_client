@@ -123,39 +123,112 @@
                                 </svg>
                                 <div>
                                     <div class="font-semibold text-yellow-900">Not Connected</div>
-                                    <div class="text-sm text-yellow-700">Connect your HighLevel account to start automating WhatsApp messages</div>
+                                    <div class="text-sm text-yellow-700">
+                                        @if($hasCredentials)
+                                            Credentials are stored but not verified. Click "Test Connection" below to verify.
+                                        @else
+                                            Connect your HighLevel account to start importing contacts
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Connection Form -->
-                        <form action="{{ route('settings.store-credentials') }}" method="POST" class="space-y-6">
-                            @csrf
-
-                            <div>
-                                <label for="api_token" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Private Integration Token <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" id="api_token" name="api_token" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    placeholder="Enter your HighLevel Private Integration token">
-                                <p class="mt-1 text-xs text-gray-500">Get this from HighLevel → Settings → Private Integrations</p>
+                        @if($hasCredentials && $locationId)
+                            <!-- Show existing credentials -->
+                            <div class="mb-6">
+                                <dl class="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <dt class="text-sm text-gray-600">Location ID</dt>
+                                        <dd class="mt-1 text-sm font-medium">{{ $locationId }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-sm text-gray-600">API Token</dt>
+                                        <dd class="mt-1 text-sm font-medium text-gray-900">••••••••••••••••</dd>
+                                    </div>
+                                </dl>
                             </div>
 
-                            <div>
-                                <label for="location_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Location ID <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" id="location_id" name="location_id" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    placeholder="Enter your HighLevel Location ID">
-                                <p class="mt-1 text-xs text-gray-500">Find this in your HighLevel account settings</p>
+                            <!-- Test Connection Button -->
+                            <div class="flex gap-4 mb-6">
+                                <form action="{{ route('settings.test-connection') }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">
+                                        Test Connection
+                                    </button>
+                                </form>
+
+                                <button onclick="document.getElementById('updateFormNotConnected').classList.toggle('hidden')" class="px-6 py-3 bg-gray-600 text-white rounded-md hover:bg-gray-700 font-medium">
+                                    Update Credentials
+                                </button>
                             </div>
 
-                            <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">
-                                Connect HighLevel Account
-                            </button>
-                        </form>
+                            <!-- Update Form (Hidden by default) -->
+                            <div id="updateFormNotConnected" class="hidden pt-6 border-t">
+                                <form action="{{ route('settings.store-credentials') }}" method="POST" class="space-y-6">
+                                    @csrf
+
+                                    <div>
+                                        <label for="api_token_update" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Private Integration Token <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="text" id="api_token_update" name="api_token" required
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            placeholder="Enter your HighLevel Private Integration token">
+                                        <p class="mt-1 text-xs text-gray-500">Get this from HighLevel → Settings → Private Integrations</p>
+                                    </div>
+
+                                    <div>
+                                        <label for="location_id_update" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Location ID <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="text" id="location_id_update" name="location_id" required
+                                            value="{{ old('location_id', $locationId) }}"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            placeholder="Enter your HighLevel Location ID">
+                                        <p class="mt-1 text-xs text-gray-500">Find this in your HighLevel account settings</p>
+                                    </div>
+
+                                    <div class="flex gap-4">
+                                        <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">
+                                            Update & Test Connection
+                                        </button>
+                                        <button type="button" onclick="document.getElementById('updateFormNotConnected').classList.add('hidden')" class="px-6 py-3 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 font-medium">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        @else
+                            <!-- Connection Form -->
+                            <form action="{{ route('settings.store-credentials') }}" method="POST" class="space-y-6">
+                                @csrf
+
+                                <div>
+                                    <label for="api_token" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Private Integration Token <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="api_token" name="api_token" required
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="Enter your HighLevel Private Integration token">
+                                    <p class="mt-1 text-xs text-gray-500">Get this from HighLevel → Settings → Private Integrations</p>
+                                </div>
+
+                                <div>
+                                    <label for="location_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Location ID <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="location_id" name="location_id" required
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="Enter your HighLevel Location ID">
+                                    <p class="mt-1 text-xs text-gray-500">Find this in your HighLevel account settings</p>
+                                </div>
+
+                                <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">
+                                    Connect HighLevel Account
+                                </button>
+                            </form>
+                        @endif
                     @endif
 
                     <!-- Setup Instructions -->
