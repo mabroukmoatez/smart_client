@@ -154,12 +154,8 @@ class ProcessContactImportJob implements ShouldQueue
                 $contactData['email'] = $email;
             }
 
-            if (!empty($tags)) {
-                $contactData['tags'] = $tags;
-            }
-
             // Create/update contact in HighLevel
-            $result = $highLevelApi->createOrUpdateContact($contactData);
+            $result = $highLevelApi->upsertContact($contactData, $tags);
 
             // Log success
             ContactImportLog::create([
