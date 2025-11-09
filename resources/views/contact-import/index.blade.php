@@ -138,11 +138,14 @@
                                 </label>
                                 <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                                     @foreach($tags as $tag)
+                                        @php
+                                            $tagName = is_array($tag) ? ($tag['name'] ?? $tag['id']) : $tag;
+                                        @endphp
                                         <label class="flex items-center p-3 border border-gray-200 rounded-md hover:border-blue-500 hover:bg-blue-50 cursor-pointer transition">
-                                            <input type="checkbox" name="selected_tags[]" value="{{ $tag }}"
+                                            <input type="checkbox" name="selected_tags[]" value="{{ $tagName }}"
                                                 class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                                {{ in_array($tag, old('selected_tags', [])) ? 'checked' : '' }}>
-                                            <span class="text-sm text-gray-700">{{ $tag }}</span>
+                                                {{ in_array($tagName, old('selected_tags', [])) ? 'checked' : '' }}>
+                                            <span class="text-sm text-gray-700">{{ $tagName }}</span>
                                         </label>
                                     @endforeach
                                 </div>
