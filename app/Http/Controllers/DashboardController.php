@@ -18,8 +18,8 @@ class DashboardController extends Controller
         $stats = [
             'total_files' => $user->uploadedFiles()->count(),
             'total_contacts' => $user->uploadedFiles()->sum('row_count'),
-            'highlevel_connected' => $user->highlevel_connected,
-            'external_api_connected' => $user->external_api_connected,
+            'highlevel_connected' => (bool) $user->highlevel_connected,
+            'external_api_connected' => (bool) $user->external_api_connected,
         ];
 
         // Recent files

@@ -92,7 +92,7 @@ class SettingsController extends Controller
                 ]);
 
                 return redirect()->route('settings.index')
-                    ->with('success', 'Connection successful! You can now use WhatsApp automation.');
+                    ->with('success', 'Connection successful! You can now import contacts to HighLevel.');
             } else {
                 return back()->withErrors(['error' => 'Connection failed: ' . $result['message']]);
             }

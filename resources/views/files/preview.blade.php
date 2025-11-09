@@ -111,9 +111,6 @@
                         <a href="{{ route('files.download', $file) }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
                             Download CSV
                         </a>
-                        <a href="{{ route('automation.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                            Create Campaign with This File
-                        </a>
                     </div>
                 </div>
             </div>
