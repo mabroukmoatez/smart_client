@@ -61,9 +61,18 @@ class User extends Authenticatable
 
     /**
      * Get the automation campaigns for the user.
+     * @deprecated Use contactImportJobs() instead
      */
     public function automationCampaigns(): HasMany
     {
         return $this->hasMany(AutomationCampaign::class);
+    }
+
+    /**
+     * Get the contact import jobs for the user.
+     */
+    public function contactImportJobs(): HasMany
+    {
+        return $this->hasMany(ContactImportJob::class);
     }
 }
