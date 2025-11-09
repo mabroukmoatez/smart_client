@@ -35,11 +35,20 @@ class HighLevelApiService
 
             $data = $response->json();
 
+            // Log the full response for debugging
+            Log::info('HighLevel API: Templates response', [
+                'location_id' => $credentials['locationId'],
+                'response_keys' => array_keys($data),
+                'full_response' => $data,
+            ]);
+
             // Return templates array - handle different response structures
             if (isset($data['templates'])) {
                 return $data['templates'];
             } elseif (isset($data['whatsappTemplates'])) {
                 return $data['whatsappTemplates'];
+            } elseif (isset($data['data'])) {
+                return $data['data'];
             } elseif (is_array($data)) {
                 return $data;
             }
