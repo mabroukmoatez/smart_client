@@ -25,19 +25,30 @@ class HighLevelApiService
         $credentials = $this->getCredentials($apiToken, $locationId);
 
         try {
+            // Correct endpoint: /locations/{locationId}/templates
             $response = Http::withHeaders($this->getHeaders($credentials['token']))
-                ->get("{$this->apiUrl}/conversations/templates", [
-                    'locationId' => $credentials['locationId'],
-                ]);
+                ->get("{$this->apiUrl}/locations/{$credentials['locationId']}/templates");
 
             if (!$response->successful()) {
                 throw new Exception("Failed to fetch templates: {$response->body()}");
             }
 
-            return $response->json('templates', []);
+            $data = $response->json();
+
+            // Return templates array - handle different response structures
+            if (isset($data['templates'])) {
+                return $data['templates'];
+            } elseif (isset($data['whatsappTemplates'])) {
+                return $data['whatsappTemplates'];
+            } elseif (is_array($data)) {
+                return $data;
+            }
+
+            return [];
         } catch (Exception $e) {
             Log::error('HighLevel API: Failed to get templates', [
                 'error' => $e->getMessage(),
+                'location_id' => $credentials['locationId'],
             ]);
             throw $e;
         }
