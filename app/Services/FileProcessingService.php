@@ -296,6 +296,51 @@ class FileProcessingService
     }
 
     /**
+     * Read all data from CSV file.
+     *
+     * @param string $csvPath
+     * @return array Array of associative arrays with headers as keys
+     */
+    public function readCsvFile(string $csvPath): array
+    {
+        $fullPath = Storage::path($csvPath);
+        $data = [];
+
+        if (!file_exists($fullPath)) {
+            return $data;
+        }
+
+        $handle = fopen($fullPath, 'r');
+
+        // Read headers
+        $headers = fgetcsv($handle);
+
+        if (!$headers) {
+            fclose($handle);
+            return $data;
+        }
+
+        // Read rows
+        while (($row = fgetcsv($handle)) !== false) {
+            if (empty($row)) {
+                continue;
+            }
+
+            // Combine headers with row values
+            $rowData = [];
+            foreach ($headers as $index => $header) {
+                $rowData[$header] = $row[$index] ?? null;
+            }
+
+            $data[] = $rowData;
+        }
+
+        fclose($handle);
+
+        return $data;
+    }
+
+    /**
      * Delete file and its converted version.
      *
      * @param string $originalPath

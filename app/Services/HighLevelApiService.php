@@ -285,6 +285,184 @@ class HighLevelApiService
     }
 
     /**
+     * Get all tags from HighLevel location.
+     *
+     * @param string|null $apiToken
+     * @param string|null $locationId
+     * @return array
+     * @throws Exception
+     */
+    public function getTags(?string $apiToken = null, ?string $locationId = null): array
+    {
+        $credentials = $this->getCredentials($apiToken, $locationId);
+
+        try {
+            $response = Http::withHeaders($this->getHeaders($credentials['token']))
+                ->get("{$this->apiUrl}/locations/{$credentials['locationId']}/tags");
+
+            if (!$response->successful()) {
+                throw new Exception("Failed to fetch tags: {$response->body()}");
+            }
+
+            $data = $response->json();
+
+            // Handle different response structures
+            if (isset($data['tags'])) {
+                return $data['tags'];
+            } elseif (isset($data['data'])) {
+                return $data['data'];
+            } elseif (is_array($data)) {
+                return $data;
+            }
+
+            return [];
+        } catch (Exception $e) {
+            Log::error('HighLevel API: Failed to get tags', [
+                'error' => $e->getMessage(),
+                'location_id' => $credentials['locationId'],
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Add tags to a contact.
+     *
+     * @param string $contactId
+     * @param array $tags
+     * @param string|null $apiToken
+     * @return array
+     * @throws Exception
+     */
+    public function addTagsToContact(string $contactId, array $tags, ?string $apiToken = null): array
+    {
+        $credentials = $this->getCredentials($apiToken, null);
+
+        try {
+            $response = Http::withHeaders($this->getHeaders($credentials['token']))
+                ->post("{$this->apiUrl}/contacts/{$contactId}/tags", [
+                    'tags' => $tags,
+                ]);
+
+            if (!$response->successful()) {
+                throw new Exception("Failed to add tags to contact: {$response->body()}");
+            }
+
+            return $response->json();
+        } catch (Exception $e) {
+            Log::error('HighLevel API: Failed to add tags to contact', [
+                'contact_id' => $contactId,
+                'tags' => $tags,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Create or update contact with tags and additional data.
+     *
+     * @param array $contactData Must include phone, can include name, email, tags, etc.
+     * @param string|null $apiToken
+     * @param string|null $locationId
+     * @return array
+     * @throws Exception
+     */
+    public function createOrUpdateContact(
+        array $contactData,
+        ?string $apiToken = null,
+        ?string $locationId = null
+    ): array {
+        $credentials = $this->getCredentials($apiToken, $locationId);
+
+        try {
+            if (empty($contactData['phone'])) {
+                throw new Exception('Phone number is required');
+            }
+
+            // Try to find existing contact
+            $response = Http::withHeaders($this->getHeaders($credentials['token']))
+                ->get("{$this->apiUrl}/contacts/search", [
+                    'locationId' => $credentials['locationId'],
+                    'phone' => $contactData['phone'],
+                ]);
+
+            $contact = null;
+            if ($response->successful()) {
+                $contacts = $response->json('contacts', []);
+                if (!empty($contacts)) {
+                    $contact = $contacts[0];
+                }
+            }
+
+            // Prepare contact data
+            $payload = [
+                'locationId' => $credentials['locationId'],
+                'phone' => $contactData['phone'],
+            ];
+
+            if (!empty($contactData['name'])) {
+                $payload['name'] = $contactData['name'];
+            }
+
+            if (!empty($contactData['email'])) {
+                $payload['email'] = $contactData['email'];
+            }
+
+            if (!empty($contactData['tags'])) {
+                $payload['tags'] = $contactData['tags'];
+            }
+
+            // Additional custom fields
+            if (!empty($contactData['customFields'])) {
+                $payload['customFields'] = $contactData['customFields'];
+            }
+
+            if ($contact) {
+                // Update existing contact
+                $response = Http::withHeaders($this->getHeaders($credentials['token']))
+                    ->put("{$this->apiUrl}/contacts/{$contact['id']}", $payload);
+
+                if (!$response->successful()) {
+                    throw new Exception("Failed to update contact: {$response->body()}");
+                }
+
+                $updatedContact = $response->json('contact', $response->json());
+
+                Log::info('HighLevel API: Contact updated successfully', [
+                    'contact_id' => $contact['id'],
+                    'phone' => $contactData['phone'],
+                ]);
+
+                return $updatedContact;
+            } else {
+                // Create new contact
+                $response = Http::withHeaders($this->getHeaders($credentials['token']))
+                    ->post("{$this->apiUrl}/contacts", $payload);
+
+                if (!$response->successful()) {
+                    throw new Exception("Failed to create contact: {$response->body()}");
+                }
+
+                $newContact = $response->json('contact', $response->json());
+
+                Log::info('HighLevel API: Contact created successfully', [
+                    'contact_id' => $newContact['id'] ?? null,
+                    'phone' => $contactData['phone'],
+                ]);
+
+                return $newContact;
+            }
+        } catch (Exception $e) {
+            Log::error('HighLevel API: Failed to create/update contact', [
+                'phone' => $contactData['phone'] ?? null,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
      * Get API request headers.
      *
      * @param string $apiToken
