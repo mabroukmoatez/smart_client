@@ -31,6 +31,37 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     });
 
+    // TEMPORARY: Debug route to check import job data
+    Route::get('/debug-import-job/{id}', function ($id) {
+        $importJob = \App\Models\ContactImportJob::findOrFail($id);
+        $files = $importJob->uploadedFiles();
+
+        $fileData = [];
+        foreach ($files as $file) {
+            $fileData[] = [
+                'id' => $file->id,
+                'filename' => $file->filename,
+                'converted_csv_path' => $file->converted_csv_path,
+                'exists' => file_exists($file->converted_csv_path),
+            ];
+        }
+
+        return response()->json([
+            'import_job' => [
+                'id' => $importJob->id,
+                'status' => $importJob->status,
+                'selected_tags' => $importJob->selected_tags,
+                'new_tags' => $importJob->new_tags,
+                'all_tags' => $importJob->all_tags,
+                'total_contacts' => $importJob->total_contacts,
+                'total_imported' => $importJob->total_imported,
+                'total_failed' => $importJob->total_failed,
+            ],
+            'files' => $fileData,
+            'logs' => $importJob->contactLogs()->orderBy('id', 'desc')->limit(5)->get(),
+        ], 200, [], JSON_PRETTY_PRINT);
+    });
+
     // TEMPORARY: Debug route to test adding contact with tag
     Route::get('/debug-add-contact', function () {
         $user = auth()->user();
