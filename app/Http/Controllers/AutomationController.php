@@ -107,7 +107,7 @@ class AutomationController extends Controller
             'description' => 'nullable|string|max:1000',
             'file_ids' => 'required|array|min:1',
             'file_ids.*' => 'exists:uploaded_files,id',
-            'template_id' => 'required|string',
+            'template_id' => 'nullable|string',
             'template_name' => 'required|string',
             'scheduled_at' => 'required|date|after:now',
         ]);
@@ -143,7 +143,7 @@ class AutomationController extends Controller
                 'user_id' => auth()->id(),
                 'name' => $request->name,
                 'description' => $request->description,
-                'template_id' => $request->template_id,
+                'template_id' => $request->template_id ?? $request->template_name, // Use template_name as fallback
                 'template_name' => $request->template_name,
                 'selected_file_ids' => $request->file_ids,
                 'scheduled_at' => $request->scheduled_at,
