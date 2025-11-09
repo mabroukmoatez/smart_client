@@ -16,6 +16,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // TEMPORARY: Debug route to check credentials
+    Route::get('/debug-credentials', function () {
+        $user = auth()->user();
+        return response()->json([
+            'user_id' => $user->id,
+            'has_token' => !empty($user->highlevel_api_token),
+            'token_length' => $user->highlevel_api_token ? strlen($user->highlevel_api_token) : 0,
+            'location_id' => $user->highlevel_location_id,
+            'connected' => $user->highlevel_connected,
+            'connected_at' => $user->highlevel_connected_at,
+            'note' => 'Visit /settings and click "Test Connection" to verify your API credentials'
+        ]);
+    });
+
     // Profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
