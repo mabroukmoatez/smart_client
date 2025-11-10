@@ -238,7 +238,7 @@
                             <li>Log in to your <a href="https://app.gohighlevel.com" target="_blank" class="text-blue-600 hover:text-blue-800">HighLevel account</a></li>
                             <li>Navigate to <strong>Settings</strong> → Scroll down to <strong>"Other Settings"</strong> → Click <strong>"Private Integrations"</strong></li>
                             <li>Click <strong>"Create new Integration"</strong></li>
-                            <li>Give it a name (e.g., "WhatsApp Automation")</li>
+                            <li>Give it a name (e.g., "Code Automation")</li>
                             <li>Select required scopes/permissions:
                                 <ul class="list-disc list-inside ml-6 mt-1">
                                     <li>contacts.readonly</li>
