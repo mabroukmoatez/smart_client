@@ -133,10 +133,36 @@ class ProcessContactImportJob implements ShouldQueue
         $name = $row['name'] ?? null;
         $email = $row['email'] ?? null;
 
+        // Log available columns for debugging
+        Log::debug('Contact Import: Processing row', [
+            'job_id' => $this->importJob->id,
+            'available_columns' => array_keys($row),
+            'phone' => $phone,
+            'name' => $name,
+            'email' => $email,
+        ]);
+
         // Skip if no phone
         if (empty($phone)) {
+            // Create log entry for missing phone
+            ContactImportLog::create([
+                'import_job_id' => $this->importJob->id,
+                'uploaded_file_id' => $file->id,
+                'contact_phone' => null,
+                'contact_name' => $name,
+                'contact_data' => $row,
+                'assigned_tags' => $tags,
+                'status' => 'failed',
+                'error_message' => 'Phone number is missing or empty. Available columns: ' . implode(', ', array_keys($row)),
+            ]);
+
             $this->importJob->increment('total_failed');
             $this->importJob->decrement('total_pending');
+
+            Log::warning('Contact Import: Skipped row - no phone number', [
+                'job_id' => $this->importJob->id,
+                'row_data' => $row,
+            ]);
             return;
         }
 
