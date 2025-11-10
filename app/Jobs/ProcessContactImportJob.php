@@ -20,7 +20,8 @@ class ProcessContactImportJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $timeout = 3600; // 1 hour
-    public $tries = 1;
+    public $tries = 3; // Retry up to 3 times
+    public $backoff = 60; // Wait 60 seconds between retries
 
     /**
      * Create a new job instance.
@@ -38,15 +39,18 @@ class ProcessContactImportJob implements ShouldQueue
     ): void
     {
         try {
-            // Mark job as processing
-            $this->importJob->update([
-                'status' => 'processing',
-                'started_at' => now(),
-            ]);
+            // Only update to processing on first attempt
+            if ($this->attempts() === 1) {
+                $this->importJob->update([
+                    'status' => 'processing',
+                    'started_at' => now(),
+                ]);
+            }
 
             Log::info('Contact Import: Starting', [
                 'job_id' => $this->importJob->id,
                 'total_contacts' => $this->importJob->total_contacts,
+                'attempt' => $this->attempts(),
             ]);
 
             // Get all tags to apply
@@ -74,15 +78,37 @@ class ProcessContactImportJob implements ShouldQueue
                 'job_id' => $this->importJob->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
+                'attempt' => $this->attempts(),
+                'max_tries' => $this->tries,
             ]);
 
-            $this->importJob->update([
-                'status' => 'failed',
-                'completed_at' => now(),
-            ]);
+            // Only mark as failed if this was the last attempt
+            if ($this->attempts() >= $this->tries) {
+                $this->importJob->update([
+                    'status' => 'failed',
+                    'completed_at' => now(),
+                ]);
+            }
 
             throw $e;
         }
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(Exception $exception): void
+    {
+        Log::error('Contact Import: Job permanently failed after all retries', [
+            'job_id' => $this->importJob->id,
+            'error' => $exception->getMessage(),
+            'attempts' => $this->attempts(),
+        ]);
+
+        $this->importJob->update([
+            'status' => 'failed',
+            'completed_at' => now(),
+        ]);
     }
 
     /**
