@@ -99,22 +99,58 @@ class ProcessContactImportJob implements ShouldQueue
             // Read CSV file
             $contacts = $fileProcessor->readCsvFile($file->converted_csv_path);
 
+            Log::info('Contact Import: File read complete', [
+                'job_id' => $this->importJob->id,
+                'file_id' => $file->id,
+                'file_path' => $file->converted_csv_path,
+                'total_rows_read' => count($contacts),
+                'first_row' => $contacts[0] ?? null,
+            ]);
+
+            if (empty($contacts)) {
+                Log::warning('Contact Import: CSV file is empty', [
+                    'job_id' => $this->importJob->id,
+                    'file_id' => $file->id,
+                    'file_path' => $file->converted_csv_path,
+                ]);
+                return;
+            }
+
+            $processedCount = 0;
             foreach ($contacts as $index => $row) {
                 // Skip header row
                 if ($index === 0) {
+                    Log::debug('Contact Import: Skipping header row', [
+                        'job_id' => $this->importJob->id,
+                        'header_row' => $row,
+                    ]);
                     continue;
                 }
 
+                Log::debug('Contact Import: Processing row', [
+                    'job_id' => $this->importJob->id,
+                    'index' => $index,
+                    'row_data' => $row,
+                ]);
+
                 $this->processContact($row, $file, $tags, $highLevelApi);
+                $processedCount++;
 
                 // Small delay to avoid rate limiting
                 usleep(100000); // 0.1 second
             }
 
+            Log::info('Contact Import: File processing complete', [
+                'job_id' => $this->importJob->id,
+                'file_id' => $file->id,
+                'rows_processed' => $processedCount,
+            ]);
+
         } catch (Exception $e) {
             Log::error('Contact Import: Failed to process file', [
                 'file_id' => $file->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }
