@@ -31,6 +31,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     });
 
+    // TEMPORARY: Debug route to check all uploaded files
+    Route::get('/debug-files', function () {
+        $user = auth()->user();
+        $files = \App\Models\UploadedFile::where('user_id', $user->id)->get();
+
+        $fileData = [];
+        foreach ($files as $file) {
+            $fullPath = \Illuminate\Support\Facades\Storage::path($file->converted_csv_path);
+            $fileData[] = [
+                'id' => $file->id,
+                'original_filename' => $file->original_filename,
+                'converted_csv_path' => $file->converted_csv_path,
+                'full_path' => $fullPath,
+                'exists' => file_exists($fullPath),
+                'row_count' => $file->row_count,
+                'created_at' => $file->created_at,
+            ];
+        }
+
+        return response()->json([
+            'total_files' => $files->count(),
+            'files' => $fileData,
+            'storage_path' => storage_path('app'),
+        ], 200, [], JSON_PRETTY_PRINT);
+    });
+
     // TEMPORARY: Debug route to check import job data
     Route::get('/debug-import-job/{id}', function ($id) {
         $importJob = \App\Models\ContactImportJob::findOrFail($id);
@@ -38,11 +64,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         $fileData = [];
         foreach ($files as $file) {
+            $fullPath = \Illuminate\Support\Facades\Storage::path($file->converted_csv_path);
             $fileData[] = [
                 'id' => $file->id,
-                'filename' => $file->filename,
+                'filename' => $file->original_filename,
                 'converted_csv_path' => $file->converted_csv_path,
-                'exists' => file_exists($file->converted_csv_path),
+                'full_path' => $fullPath,
+                'exists' => file_exists($fullPath),
             ];
         }
 
