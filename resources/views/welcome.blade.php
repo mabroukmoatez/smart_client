@@ -30,11 +30,11 @@
         }
     </style>
 </head>
-<body class="antialiased bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 min-h-screen">
+<body class="antialiased bg-gradient-to-br from-purple-600 to-indigo-600 min-h-screen">
     <!-- Animated background blobs -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
         <div class="blob absolute top-20 -left-20 w-96 h-96 bg-purple-300 opacity-30 blur-3xl"></div>
-        <div class="blob absolute top-40 -right-20 w-96 h-96 bg-pink-300 opacity-30 blur-3xl" style="animation-delay: 2s"></div>
+        <div class="blob absolute top-40 -right-20 w-96 h-96 bg-indigo-300 opacity-30 blur-3xl" style="animation-delay: 2s"></div>
         <div class="blob absolute -bottom-20 left-1/2 w-96 h-96 bg-blue-300 opacity-30 blur-3xl" style="animation-delay: 4s"></div>
     </div>
 
@@ -64,7 +64,7 @@
                 <div class="text-center mb-16 animate-fadeInUp">
                     <h2 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white mb-6 drop-shadow-2xl leading-tight">
                         Automate Your Messages<br>
-                        <span class="bg-gradient-to-r from-yellow-200 via-pink-200 to-blue-200 bg-clip-text text-transparent">
+                        <span class="bg-gradient-to-r from-yellow-200 to-blue-200 bg-clip-text text-transparent">
                             with HighLevel
                         </span>
                     </h2>
@@ -94,7 +94,7 @@
                     </div>
 
                     <div class="bg-white/10 backdrop-blur-xl p-8 rounded-3xl border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-2 hover:bg-white/20 animate-fadeInUp" style="animation-delay: 0.1s">
-                        <div class="bg-gradient-to-br from-pink-400 to-pink-600 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-xl">
+                        <div class="bg-gradient-to-br from-emerald-400 to-emerald-600 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-xl">
                             <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                             </svg>

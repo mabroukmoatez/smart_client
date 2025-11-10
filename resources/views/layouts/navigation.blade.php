@@ -1,9 +1,9 @@
-<nav class="bg-white/80 backdrop-blur-xl border-b border-purple-100 shadow-lg sticky top-0 z-50">
+<nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" class="text-xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300">
+                    <a href="{{ route('dashboard') }}" class="text-xl font-bold text-gray-800 hover:text-purple-600 transition-colors duration-300">
                         Code Automation(Demo 1 day)
                     </a>
                 </div>
@@ -45,14 +45,14 @@
                          x-transition:leave="transition ease-in duration-150"
                          x-transition:leave-start="opacity-100 scale-100"
                          x-transition:leave-end="opacity-0 scale-95"
-                         class="absolute right-0 mt-2 w-48 rounded-xl shadow-xl bg-white/90 backdrop-blur-lg ring-1 ring-purple-100 overflow-hidden"
+                         class="absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-gray-200 overflow-hidden"
                          style="display: none;">
-                        <a href="{{ route('profile.edit') }}" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-300">
+                        <a href="{{ route('profile.edit') }}" class="block px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 transition-all duration-300">
                             Profile
                         </a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-300 border-t border-purple-50">
+                            <button type="submit" class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 transition-all duration-300 border-t border-gray-100">
                                 Log Out
                             </button>
                         </form>

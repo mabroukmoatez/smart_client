@@ -10,49 +10,7 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-/* Modern Gradient Backgrounds */
-.bg-gradient-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.bg-gradient-secondary {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-.bg-gradient-success {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
-.bg-gradient-warm {
-    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-}
-
-.bg-gradient-cool {
-    background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
-}
-
-.bg-gradient-sunset {
-    background: linear-gradient(135deg, #ff6b6b 0%, #feca57 50%, #48dbfb 100%);
-}
-
-.bg-gradient-ocean {
-    background: linear-gradient(135deg, #2E3192 0%, #1BFFFF 100%);
-}
-
-/* Text Gradients */
-.text-gradient-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.text-gradient-warm {
-    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
+/* Clean Modern Styles - Orchid Inspired */
 
 /* Modern Animations */
 @keyframes fadeInUp {
@@ -152,13 +110,8 @@
 }
 
 /* Modern Button Styles */
-.btn-gradient {
-    @apply px-6 py-3 rounded-lg font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.btn-gradient:hover {
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+.btn-primary {
+    @apply px-6 py-3 rounded-lg font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 bg-purple-600 hover:bg-purple-700;
 }
 
 /* Modern Input Styles */

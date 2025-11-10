@@ -21,7 +21,7 @@
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="font-sans antialiased bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 min-h-screen">
+<body class="font-sans antialiased bg-gradient-to-br from-purple-600 to-indigo-600 min-h-screen">
     <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 px-4">
         <div class="animate-fadeInUp">
             <a href="/">
@@ -30,7 +30,7 @@
                 </h1>
             </a>
         </div>
-        <div class="w-full sm:max-w-md mt-6 px-8 py-8 bg-white/95 backdrop-blur-lg shadow-2xl overflow-hidden rounded-2xl border border-white/20 animate-fadeInUp">
+        <div class="w-full sm:max-w-md mt-6 px-8 py-8 bg-white shadow-2xl overflow-hidden rounded-2xl animate-fadeInUp">
             {{ $slot }}
         </div>
     </div>

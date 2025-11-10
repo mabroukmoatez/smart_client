@@ -21,11 +21,11 @@
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="font-sans antialiased bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 min-h-screen">
+<body class="font-sans antialiased bg-gray-50 min-h-screen">
     <div class="min-h-screen">
         @include('layouts.navigation')
         @if (isset($header))
-            <header class="bg-white/80 backdrop-blur-lg shadow-lg border-b border-purple-100">
+            <header class="bg-white shadow-sm border-b border-gray-200">
                 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 animate-fadeInUp">
                     {{ $header }}
                 </div>
