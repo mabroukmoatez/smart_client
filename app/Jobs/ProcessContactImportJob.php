@@ -52,8 +52,31 @@ class ProcessContactImportJob implements ShouldQueue
             // Get all tags to apply
             $tags = $this->importJob->all_tags;
 
+            // Get files to process
+            $files = $this->importJob->uploadedFiles();
+
+            Log::info('Contact Import: Files to process', [
+                'job_id' => $this->importJob->id,
+                'selected_file_ids' => $this->importJob->selected_file_ids,
+                'files_found' => $files->count(),
+                'file_ids' => $files->pluck('id')->toArray(),
+            ]);
+
+            if ($files->isEmpty()) {
+                Log::error('Contact Import: No files found', [
+                    'job_id' => $this->importJob->id,
+                    'selected_file_ids' => $this->importJob->selected_file_ids,
+                ]);
+            }
+
             // Process each file
-            foreach ($this->importJob->uploadedFiles() as $file) {
+            foreach ($files as $file) {
+                Log::info('Contact Import: Processing file', [
+                    'job_id' => $this->importJob->id,
+                    'file_id' => $file->id,
+                    'file_path' => $file->converted_csv_path,
+                ]);
+
                 $this->processFile($file, $tags, $highLevelApi, $fileProcessor);
             }
 
