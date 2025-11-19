@@ -16,7 +16,7 @@ echo ""
 echo "Starting in 3 seconds..."
 sleep 3
 
-cd /home/user/smart_client
+cd laragon/www/abar_client
 
 # Start the queue worker with optimal settings
 php artisan queue:work database \
