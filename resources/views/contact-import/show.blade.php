@@ -1,264 +1,298 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Import Job Details') }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    @if($importJob->status === 'processing' || $importJob->status === 'pending')
-        <script>
-            // Auto-refresh every 3 seconds if import is still processing
-            setTimeout(function() {
-                window.location.reload();
-            }, 3000);
-        </script>
+@section('title', 'Import Job Details')
+
+@section('content')
+@if($importJob->status === 'processing' || $importJob->status === 'pending')
+    <script>
+        // Auto-refresh every 3 seconds if import is still processing
+        setTimeout(function() {
+            window.location.reload();
+        }, 3000);
+    </script>
+@endif
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Breadcrumb Header -->
+    <h4 class="fw-bold mb-4">
+        <span class="text-muted fw-light">Contacts / Import Jobs /</span> Details
+    </h4>
+
+    <!-- Success Alert -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     @endif
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if(session('success'))
-                <div class="bg-green-50 border border-green-200 text-green-800 rounded-md p-4 mb-6">
-                    {{ session('success') }}
-                </div>
-            @endif
+    <!-- Error Alert -->
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
-            @if($errors->any())
-                <div class="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-6">
-                    <ul class="list-disc list-inside">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <!-- Job Header -->
-            <div class="bg-white shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="text-2xl font-bold text-gray-900">{{ $importJob->name }}</h3>
-                            @if($importJob->description)
-                                <p class="mt-1 text-sm text-gray-600">{{ $importJob->description }}</p>
-                            @endif
-                            <div class="mt-2 flex items-center gap-4">
-                                @if($importJob->status === 'pending')
-                                    <span class="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">Pending</span>
-                                @elseif($importJob->status === 'processing')
-                                    <span class="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 animate-pulse">Processing</span>
-                                @elseif($importJob->status === 'completed')
-                                    <span class="px-3 py-1 text-sm rounded-full bg-green-100 text-green-800">Completed</span>
-                                @elseif($importJob->status === 'failed')
-                                    <span class="px-3 py-1 text-sm rounded-full bg-red-100 text-red-800">Failed</span>
-                                @elseif($importJob->status === 'cancelled')
-                                    <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">Cancelled</span>
-                                @endif
-
-                                <span class="text-sm text-gray-500">Created {{ $importJob->created_at->diffForHumans() }}</span>
-                            </div>
-                        </div>
-                        <div class="flex gap-3">
-                            <a href="{{ route('contact-import.list') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
-                                Back to List
-                            </a>
-                            @if($importJob->status === 'processing' || $importJob->status === 'pending')
-                                <form action="{{ route('contact-import.cancel', $importJob) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this import?')">
-                                    @csrf
-                                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
-                                        Cancel Import
-                                    </button>
-                                </form>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Statistics -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                    <div class="text-gray-600 text-sm">Total Contacts</div>
-                    <div class="text-3xl font-bold text-blue-600">{{ number_format($importJob->total_contacts) }}</div>
-                    <div class="text-xs text-gray-500 mt-1">To be imported</div>
-                </div>
-
-                <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                    <div class="text-gray-600 text-sm">Imported</div>
-                    <div class="text-3xl font-bold text-green-600">{{ number_format($importJob->total_imported) }}</div>
-                    <div class="text-xs text-gray-500 mt-1">Successfully imported</div>
-                </div>
-
-                <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                    <div class="text-gray-600 text-sm">Failed</div>
-                    <div class="text-3xl font-bold text-red-600">{{ number_format($importJob->total_failed) }}</div>
-                    <div class="text-xs text-gray-500 mt-1">Import failures</div>
-                </div>
-
-                <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                    <div class="text-gray-600 text-sm">Pending</div>
-                    <div class="text-3xl font-bold text-yellow-600">{{ number_format($importJob->total_pending) }}</div>
-                    <div class="text-xs text-gray-500 mt-1">In queue</div>
-                </div>
-            </div>
-
-            <!-- Progress Bar -->
-            <div class="bg-white shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <h3 class="text-lg font-semibold mb-4">Overall Progress</h3>
-                    <div class="flex items-center">
-                        <div class="flex-1 bg-gray-200 rounded-full h-4 mr-4">
-                            <div class="bg-blue-600 h-4 rounded-full transition-all duration-500" style="width: {{ $importJob->completion_percentage }}%"></div>
-                        </div>
-                        <span class="text-lg font-semibold text-gray-700">{{ number_format($importJob->completion_percentage, 1) }}%</span>
-                    </div>
-                    @if($importJob->success_rate > 0)
-                        <p class="mt-3 text-sm text-gray-600">
-                            Success Rate: <span class="font-semibold text-green-600">{{ number_format($importJob->success_rate, 1) }}%</span>
-                        </p>
+    <!-- Job Header -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start flex-wrap">
+                <div>
+                    <h3 class="mb-2">{{ $importJob->name }}</h3>
+                    @if($importJob->description)
+                        <p class="text-muted mb-2">{{ $importJob->description }}</p>
                     @endif
-                </div>
-            </div>
-
-            <!-- Import Details -->
-            <div class="bg-white shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <h3 class="text-lg font-semibold mb-4">Import Details</h3>
-                    <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <dt class="text-sm text-gray-600">Selected Files</dt>
-                            <dd class="mt-1 text-sm font-medium">
-                                @if(count($importJob->uploadedFiles()) > 0)
-                                    <ul class="list-disc list-inside">
-                                        @foreach($importJob->uploadedFiles() as $file)
-                                            <li>{{ $file->original_filename }} ({{ number_format($file->row_count) }} contacts)</li>
-                                        @endforeach
-                                    </ul>
-                                @else
-                                    <span class="text-gray-500">No files</span>
-                                @endif
-                            </dd>
-                        </div>
-
-                        <div>
-                            <dt class="text-sm text-gray-600">Tags Applied</dt>
-                            <dd class="mt-1 text-sm font-medium">
-                                @if(count($importJob->all_tags) > 0)
-                                    <div class="flex flex-wrap gap-2">
-                                        @foreach($importJob->all_tags as $tag)
-                                            <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">{{ $tag }}</span>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <span class="text-gray-500">No tags</span>
-                                @endif
-                            </dd>
-                        </div>
-
-                        <div>
-                            <dt class="text-sm text-gray-600">Started At</dt>
-                            <dd class="mt-1 text-sm font-medium">
-                                {{ $importJob->started_at ? $importJob->started_at->format('M d, Y H:i:s') : 'Not started yet' }}
-                            </dd>
-                        </div>
-
-                        <div>
-                            <dt class="text-sm text-gray-600">Completed At</dt>
-                            <dd class="mt-1 text-sm font-medium">
-                                {{ $importJob->completed_at ? $importJob->completed_at->format('M d, Y H:i:s') : 'In progress' }}
-                            </dd>
-                        </div>
-                    </dl>
-                </div>
-            </div>
-
-            <!-- Contact Logs -->
-            <div class="bg-white shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <h3 class="text-lg font-semibold mb-4">Contact Import Logs</h3>
-
-                    @if($importJob->contactLogs->count() > 0)
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">HighLevel ID</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tags</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Error</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @foreach($importJob->contactLogs->sortByDesc('created_at')->take(100) as $log)
-                                        @php
-                                            $action = $log->contact_data['action'] ?? 'unknown';
-                                        @endphp
-                                        <tr class="hover:bg-gray-50 {{ $log->status === 'failed' ? 'bg-red-50' : ($action === 'created' ? 'bg-blue-50' : 'bg-yellow-50') }}">
-                                            <td class="px-4 py-3">
-                                                @if($log->status === 'sent')
-                                                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Success</span>
-                                                @else
-                                                    <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Failed</span>
-                                                @endif
-                                            </td>
-                                            <td class="px-4 py-3">
-                                                @if($log->status === 'sent')
-                                                    @if($action === 'created')
-                                                        <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">CREATED</span>
-                                                    @elseif($action === 'updated')
-                                                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">UPDATED</span>
-                                                    @else
-                                                        <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">-</span>
-                                                    @endif
-                                                @else
-                                                    <span class="text-gray-400 text-xs">-</span>
-                                                @endif
-                                            </td>
-                                            <td class="px-4 py-3 text-sm text-gray-900">{{ $log->contact_phone }}</td>
-                                            <td class="px-4 py-3 text-sm text-gray-700">{{ $log->contact_name ?? '-' }}</td>
-                                            <td class="px-4 py-3 text-sm text-gray-600 font-mono">{{ $log->highlevel_contact_id ?? '-' }}</td>
-                                            <td class="px-4 py-3">
-                                                @if($log->assigned_tags && count($log->assigned_tags) > 0)
-                                                    <div class="flex flex-wrap gap-1">
-                                                        @foreach($log->assigned_tags as $tag)
-                                                            <span class="px-1 py-0.5 text-xs rounded bg-blue-100 text-blue-800">{{ $tag }}</span>
-                                                        @endforeach
-                                                    </div>
-                                                @else
-                                                    <span class="text-gray-400 text-xs">None</span>
-                                                @endif
-                                            </td>
-                                            <td class="px-4 py-3 text-sm text-gray-500">
-                                                {{ $log->imported_at ? $log->imported_at->format('H:i:s') : '-' }}
-                                            </td>
-                                            <td class="px-4 py-3 text-sm text-red-600">
-                                                {{ $log->error_message ? Str::limit($log->error_message, 50) : '-' }}
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-
-                        @if($importJob->contactLogs->count() > 100)
-                            <p class="mt-4 text-sm text-gray-600 text-center">
-                                Showing first 100 logs of {{ number_format($importJob->contactLogs->count()) }}
-                            </p>
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        @if($importJob->status === 'pending')
+                            <span class="badge bg-warning">Pending</span>
+                        @elseif($importJob->status === 'processing')
+                            <span class="badge bg-primary">
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                Processing
+                            </span>
+                        @elseif($importJob->status === 'completed')
+                            <span class="badge bg-success">Completed</span>
+                        @elseif($importJob->status === 'failed')
+                            <span class="badge bg-danger">Failed</span>
+                        @elseif($importJob->status === 'cancelled')
+                            <span class="badge bg-secondary">Cancelled</span>
                         @endif
-                    @else
-                        <div class="text-center py-12">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">No logs yet</h3>
-                            <p class="mt-1 text-sm text-gray-500">Import processing hasn't started or no contacts have been processed.</p>
-                        </div>
+
+                        <small class="text-muted">Created {{ $importJob->created_at->diffForHumans() }}</small>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3 mt-md-0">
+                    <a href="{{ route('contact-import.list') }}" class="btn btn-secondary">
+                        <i class='bx bx-arrow-back me-1'></i>
+                        Back to List
+                    </a>
+                    @if($importJob->status === 'processing' || $importJob->status === 'pending')
+                        <form action="{{ route('contact-import.cancel', $importJob) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this import?')">
+                            @csrf
+                            <button type="submit" class="btn btn-danger">
+                                <i class='bx bx-x me-1'></i>
+                                Cancel Import
+                            </button>
+                        </form>
                     @endif
                 </div>
             </div>
         </div>
     </div>
-</x-app-layout>
+
+    <!-- Statistics -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">Total Contacts</div>
+                    <h3 class="text-primary mb-1">{{ number_format($importJob->total_contacts) }}</h3>
+                    <small class="text-muted">To be imported</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">Imported</div>
+                    <h3 class="text-success mb-1">{{ number_format($importJob->total_imported) }}</h3>
+                    <small class="text-muted">Successfully imported</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">Failed</div>
+                    <h3 class="text-danger mb-1">{{ number_format($importJob->total_failed) }}</h3>
+                    <small class="text-muted">Import failures</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">Pending</div>
+                    <h3 class="text-warning mb-1">{{ number_format($importJob->total_pending) }}</h3>
+                    <small class="text-muted">In queue</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-4">Overall Progress</h5>
+            <div class="d-flex align-items-center">
+                <div class="progress flex-grow-1 me-3" style="height: 16px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                        role="progressbar"
+                        style="width: {{ $importJob->completion_percentage }}%"
+                        aria-valuenow="{{ $importJob->completion_percentage }}"
+                        aria-valuemin="0"
+                        aria-valuemax="100"></div>
+                </div>
+                <span class="h5 mb-0">{{ number_format($importJob->completion_percentage, 1) }}%</span>
+            </div>
+            @if($importJob->success_rate > 0)
+                <p class="mt-3 mb-0">
+                    Success Rate: <span class="fw-bold text-success">{{ number_format($importJob->success_rate, 1) }}%</span>
+                </p>
+            @endif
+        </div>
+    </div>
+
+    <!-- Import Details -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-4">Import Details</h5>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-2">Selected Files</h6>
+                    @if(count($importJob->uploadedFiles()) > 0)
+                        <ul class="list-unstyled">
+                            @foreach($importJob->uploadedFiles() as $file)
+                                <li class="mb-1">
+                                    <i class='bx bx-file me-1'></i>
+                                    {{ $file->original_filename }} ({{ number_format($file->row_count) }} contacts)
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="text-muted mb-0">No files</p>
+                    @endif
+                </div>
+
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-2">Tags Applied</h6>
+                    @if(count($importJob->all_tags) > 0)
+                        <div class="d-flex flex-wrap gap-1">
+                            @foreach($importJob->all_tags as $tag)
+                                <span class="badge bg-label-primary">{{ $tag }}</span>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-muted mb-0">No tags</p>
+                    @endif
+                </div>
+
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-2">Started At</h6>
+                    <p class="mb-0">{{ $importJob->started_at ? $importJob->started_at->format('M d, Y H:i:s') : 'Not started yet' }}</p>
+                </div>
+
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-2">Completed At</h6>
+                    <p class="mb-0">{{ $importJob->completed_at ? $importJob->completed_at->format('M d, Y H:i:s') : 'In progress' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Logs -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title mb-4">Contact Import Logs</h5>
+
+            @if($importJob->contactLogs->count() > 0)
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Action</th>
+                                <th>Phone</th>
+                                <th>Name</th>
+                                <th>HighLevel ID</th>
+                                <th>Tags</th>
+                                <th>Time</th>
+                                <th>Error</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($importJob->contactLogs->sortByDesc('created_at')->take(100) as $log)
+                                @php
+                                    $action = $log->contact_data['action'] ?? 'unknown';
+                                    $rowClass = '';
+                                    if ($log->status === 'failed') {
+                                        $rowClass = 'table-danger';
+                                    } elseif ($action === 'created') {
+                                        $rowClass = 'table-primary';
+                                    } elseif ($action === 'updated') {
+                                        $rowClass = 'table-warning';
+                                    }
+                                @endphp
+                                <tr class="{{ $rowClass }}">
+                                    <td>
+                                        @if($log->status === 'sent')
+                                            <span class="badge bg-success">Success</span>
+                                        @else
+                                            <span class="badge bg-danger">Failed</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($log->status === 'sent')
+                                            @if($action === 'created')
+                                                <span class="badge bg-label-primary">CREATED</span>
+                                            @elseif($action === 'updated')
+                                                <span class="badge bg-label-warning">UPDATED</span>
+                                            @else
+                                                <span class="badge bg-label-secondary">-</span>
+                                            @endif
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $log->contact_phone }}</td>
+                                    <td>{{ $log->contact_name ?? '-' }}</td>
+                                    <td><code>{{ $log->highlevel_contact_id ?? '-' }}</code></td>
+                                    <td>
+                                        @if($log->assigned_tags && count($log->assigned_tags) > 0)
+                                            <div class="d-flex flex-wrap gap-1">
+                                                @foreach($log->assigned_tags as $tag)
+                                                    <span class="badge bg-label-info">{{ $tag }}</span>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <span class="text-muted">None</span>
+                                        @endif
+                                    </td>
+                                    <td><small>{{ $log->imported_at ? $log->imported_at->format('H:i:s') : '-' }}</small></td>
+                                    <td>
+                                        @if($log->error_message)
+                                            <small class="text-danger">{{ Str::limit($log->error_message, 50) }}</small>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                @if($importJob->contactLogs->count() > 100)
+                    <p class="text-center text-muted mt-3 mb-0">
+                        Showing first 100 logs of {{ number_format($importJob->contactLogs->count()) }}
+                    </p>
+                @endif
+            @else
+                <div class="text-center py-5">
+                    <i class='bx bx-file display-1 text-muted'></i>
+                    <h5 class="mt-3">No logs yet</h5>
+                    <p class="text-muted mb-0">Import processing hasn't started or no contacts have been processed.</p>
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+@endsection

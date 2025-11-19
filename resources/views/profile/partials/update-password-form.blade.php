@@ -1,34 +1,37 @@
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-900">Update Password</h2>
-        <p class="mt-1 text-sm text-gray-600">Ensure your account is using a long, random password to stay secure.</p>
+        <h5 class="fw-medium">Update Password</h5>
+        <p class="text-muted small mt-1">Ensure your account is using a long, random password to stay secure.</p>
     </header>
 
-    <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('password.update') }}" class="mt-4">
         @csrf
         @method('put')
 
-        <div>
-            <label for="current_password" class="block font-medium text-sm text-gray-700">Current Password</label>
-            <input id="current_password" name="current_password" type="password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-            @error('current_password')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+        <div class="mb-3">
+            <label for="current_password" class="form-label">Current Password</label>
+            <input id="current_password" name="current_password" type="password" required class="form-control" />
+            @error('current_password')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
         </div>
 
-        <div>
-            <label for="password" class="block font-medium text-sm text-gray-700">New Password</label>
-            <input id="password" name="password" type="password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-            @error('password')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+        <div class="mb-3">
+            <label for="password" class="form-label">New Password</label>
+            <input id="password" name="password" type="password" required class="form-control" />
+            @error('password')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
         </div>
 
-        <div>
-            <label for="password_confirmation" class="block font-medium text-sm text-gray-700">Confirm Password</label>
-            <input id="password_confirmation" name="password_confirmation" type="password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+        <div class="mb-3">
+            <label for="password_confirmation" class="form-label">Confirm Password</label>
+            <input id="password_confirmation" name="password_confirmation" type="password" required class="form-control" />
         </div>
 
-        <div class="flex items-center gap-4">
-            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save</button>
+        <div class="d-flex align-items-center gap-3">
+            <button type="submit" class="btn btn-primary">
+                <i class='bx bx-save me-1'></i>
+                Save
+            </button>
             @if (session('status') === 'password-updated')
-                <p class="text-sm text-gray-600">Saved.</p>
+                <span class="text-success small">Saved.</span>
             @endif
         </div>
     </form>
