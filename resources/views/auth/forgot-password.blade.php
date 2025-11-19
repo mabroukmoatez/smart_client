@@ -1,19 +1,50 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        Forgot your password? No problem. Just let us know your email address and we will email you a password reset link.
-    </div>
+    @section('title', 'Forgot Password')
+
+    <h4 class="mb-1">Forgot Password? 🔒</h4>
+    <p class="mb-6">Enter your email and we'll send you instructions to reset your password</p>
+
+    <!-- Session Status -->
     @if (session('status'))
-        <div class="mb-4 font-medium text-sm text-green-600">{{ session('status') }}</div>
+        <div class="alert alert-success mb-4">
+            {{ session('status') }}
+        </div>
     @endif
-    <form method="POST" action="{{ route('password.email') }}">
+
+    <!-- Validation Errors -->
+    @if ($errors->any())
+        <div class="alert alert-danger mb-4">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form id="formAuthentication" class="mb-6" action="{{ route('password.email') }}" method="POST">
         @csrf
-        <div>
-            <label for="email" class="block font-medium text-sm text-gray-700">Email</label>
-            <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-            @error('email')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+
+        <div class="mb-6">
+            <label for="email" class="form-label">Email</label>
+            <input
+                type="email"
+                class="form-control"
+                id="email"
+                name="email"
+                value="{{ old('email') }}"
+                placeholder="Enter your email"
+                autofocus
+                required />
         </div>
-        <div class="flex items-center justify-end mt-4">
-            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Email Password Reset Link</button>
-        </div>
+
+        <button class="btn btn-primary d-grid w-100 mb-6">Send Reset Link</button>
     </form>
+
+    <div class="text-center">
+        <a href="{{ route('login') }}" class="d-flex align-items-center justify-content-center">
+            <i class="icon-base bx bx-chevron-left scaleX-n1-rtl me-1"></i>
+            Back to login
+        </a>
+    </div>
 </x-guest-layout>
