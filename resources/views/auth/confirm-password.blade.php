@@ -1,16 +1,47 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
+    @section('title', 'Confirm Password')
+
+    <h4 class="mb-1">Confirm Password 🔒</h4>
+    <p class="mb-6">
         This is a secure area of the application. Please confirm your password before continuing.
-    </div>
+    </p>
+
     <form method="POST" action="{{ route('password.confirm') }}">
         @csrf
-        <div>
-            <label for="password" class="block font-medium text-sm text-gray-700">Password</label>
-            <input id="password" type="password" name="password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-            @error('password')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+
+        <div class="mb-6">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-group input-group-merge">
+                <input id="password" type="password" name="password" required autofocus class="form-control" placeholder="Enter your password" />
+                <span class="input-group-text cursor-pointer" onclick="togglePassword('password')">
+                    <i class="bx bx-hide" id="password-icon"></i>
+                </span>
+            </div>
+            @error('password')
+                <div class="text-danger small mt-1">{{ $message }}</div>
+            @enderror
         </div>
-        <div class="flex justify-end mt-4">
-            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Confirm</button>
-        </div>
+
+        <button type="submit" class="btn btn-primary w-100">
+            <i class="bx bx-check me-1"></i> Confirm
+        </button>
     </form>
+
+    @push('scripts')
+    <script>
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = document.getElementById(fieldId + '-icon');
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('bx-hide');
+                icon.classList.add('bx-show');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('bx-show');
+                icon.classList.add('bx-hide');
+            }
+        }
+    </script>
+    @endpush
 </x-guest-layout>
