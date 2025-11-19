@@ -1,28 +1,85 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
+    @section('title', 'Register')
+
+    <h4 class="mb-1">Adventure starts here 🚀</h4>
+    <p class="mb-6">Make your app management easy and fun!</p>
+
+    <!-- Validation Errors -->
+    @if ($errors->any())
+        <div class="alert alert-danger mb-4">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form id="formAuthentication" class="mb-6" action="{{ route('register') }}" method="POST">
         @csrf
-        <div>
-            <label for="name" class="block font-medium text-sm text-gray-700">Name</label>
-            <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-            @error('name')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+
+        <div class="mb-6">
+            <label for="name" class="form-label">Name</label>
+            <input
+                type="text"
+                class="form-control"
+                id="name"
+                name="name"
+                value="{{ old('name') }}"
+                placeholder="Enter your name"
+                autofocus
+                required />
         </div>
-        <div class="mt-4">
-            <label for="email" class="block font-medium text-sm text-gray-700">Email</label>
-            <input id="email" type="email" name="email" value="{{ old('email') }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-            @error('email')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+
+        <div class="mb-6">
+            <label for="email" class="form-label">Email</label>
+            <input
+                type="email"
+                class="form-control"
+                id="email"
+                name="email"
+                value="{{ old('email') }}"
+                placeholder="Enter your email"
+                required />
         </div>
-        <div class="mt-4">
-            <label for="password" class="block font-medium text-sm text-gray-700">Password</label>
-            <input id="password" type="password" name="password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-            @error('password')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+
+        <div class="mb-6 form-password-toggle">
+            <label class="form-label" for="password">Password</label>
+            <div class="input-group input-group-merge">
+                <input
+                    type="password"
+                    id="password"
+                    class="form-control"
+                    name="password"
+                    placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                    aria-describedby="password"
+                    required />
+                <span class="input-group-text cursor-pointer"><i class="icon-base bx bx-hide"></i></span>
+            </div>
         </div>
-        <div class="mt-4">
-            <label for="password_confirmation" class="block font-medium text-sm text-gray-700">Confirm Password</label>
-            <input id="password_confirmation" type="password" name="password_confirmation" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+
+        <div class="mb-6 form-password-toggle">
+            <label class="form-label" for="password_confirmation">Confirm Password</label>
+            <div class="input-group input-group-merge">
+                <input
+                    type="password"
+                    id="password_confirmation"
+                    class="form-control"
+                    name="password_confirmation"
+                    placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                    aria-describedby="password_confirmation"
+                    required />
+                <span class="input-group-text cursor-pointer"><i class="icon-base bx bx-hide"></i></span>
+            </div>
         </div>
-        <div class="flex items-center justify-end mt-4">
-            <a href="{{ route('login') }}" class="text-sm text-gray-600 hover:text-gray-900">Already registered?</a>
-            <button type="submit" class="ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Register</button>
-        </div>
+
+        <button class="btn btn-primary d-grid w-100 mb-6">Sign up</button>
     </form>
+
+    <p class="text-center">
+        <span>Already have an account?</span>
+        <a href="{{ route('login') }}">
+            <span>Sign in instead</span>
+        </a>
+    </p>
 </x-guest-layout>
